@@ -1,0 +1,7 @@
+defines = -DNDEBUG
+framework_dirs =
+include_dirs =
+target_output_name = system_buildconfig
+
+
+build phony/src/system/system_buildconfig: phony || phony/src/system/gen_system_buildconfig

@@ -1,0 +1,26 @@
+{
+  "gn_target_name": "//third_party/pigweed/repo/pw_bloat/py:py",
+  "inputs": [
+
+  ],
+  "setup_sources": [
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_bloat/py/pyproject.toml",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_bloat/py/setup.cfg"
+  ],
+  "sources": [
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_bloat/py/pw_bloat/__init__.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_bloat/py/pw_bloat/__main__.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_bloat/py/pw_bloat/binary_size_aggregator.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_bloat/py/pw_bloat/bloat.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_bloat/py/pw_bloat/bloaty_config.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_bloat/py/pw_bloat/build.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_bloat/py/pw_bloat/label.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_bloat/py/pw_bloat/label_output.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_bloat/py/pw_bloat/no_bloaty.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_bloat/py/pw_bloat/no_toolchains.py"
+  ],
+  "tests": [
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_bloat/py/bloaty_config_test.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_bloat/py/label_test.py"
+  ]
+}

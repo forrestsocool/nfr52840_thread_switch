@@ -1,0 +1,5 @@
+west:
+  command: C:\ncs\toolchains\66cdf9b75e\opt\bin\Scripts\west build -b promicro_nrf52840
+    --no-sysbuild -p
+  topdir: C:\ncs\v3.2.1
+  version: 1.4.0

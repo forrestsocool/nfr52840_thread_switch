@@ -1,0 +1,17 @@
+{
+  "dependencies": [
+
+  ],
+  "label": "//third_party/pigweed/repo/pw_build:workflows_proto.python",
+  "nested_in_python_package": "//third_party/pigweed/repo/pw_build/py:workflows",
+  "package": "pw_build",
+  "protoc_outputs": [
+    "protocol_buffer/gen/third_party/pigweed/repo/pw_build/workflows_proto.proto_library/python/pw_build/proto/build_driver_pb2.py",
+    "protocol_buffer/gen/third_party/pigweed/repo/pw_build/workflows_proto.proto_library/python/pw_build/proto/build_driver_pb2.pyi",
+    "protocol_buffer/gen/third_party/pigweed/repo/pw_build/workflows_proto.proto_library/python/pw_build/proto/pigweed_build_driver_pb2.py",
+    "protocol_buffer/gen/third_party/pigweed/repo/pw_build/workflows_proto.proto_library/python/pw_build/proto/pigweed_build_driver_pb2.pyi",
+    "protocol_buffer/gen/third_party/pigweed/repo/pw_build/workflows_proto.proto_library/python/pw_build/proto/workflows_pb2.py",
+    "protocol_buffer/gen/third_party/pigweed/repo/pw_build/workflows_proto.proto_library/python/pw_build/proto/workflows_pb2.pyi"
+  ],
+  "root": "protocol_buffer/gen/third_party/pigweed/repo/pw_build/workflows_proto.proto_library/python"
+}

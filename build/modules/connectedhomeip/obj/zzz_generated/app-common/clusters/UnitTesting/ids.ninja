@@ -1,0 +1,8 @@
+defines = -DNDEBUG -DCHIP_HAVE_CONFIG_H=1
+framework_dirs =
+include_dirs = -IC$:/ncs/v3.2.1/modules/lib/matter/src/include -IC$:/ncs/v3.2.1/modules/lib/matter/src -Igen/include -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/nlassert/repo/include
+target_output_name = ids
+
+build phony/zzz_generated/app-common/clusters/UnitTesting/ids.inputdeps: phony phony/src/app/icd/server/gen_icd-server-buildconfig phony/src/ble/gen_ble_buildconfig phony/src/inet/gen_inet_buildconfig phony/src/lib/core/gen_chip_buildconfig phony/src/platform/gen_platform_buildconfig phony/src/system/gen_system_buildconfig
+
+build phony/zzz_generated/app-common/clusters/UnitTesting/ids: phony || phony/src/app/common/global-ids phony/src/lib/core/types phony/src/lib/core/chip_config_header phony/src/ble/ble_config_header phony/src/system/system_config_header phony/src/system/system_buildconfig phony/src/platform/platform_buildconfig phony/src/app/icd/server/icd-server-config phony/src/app/icd/server/icd-server-buildconfig phony/src/ble/ble_buildconfig phony/src/inet/inet_config_header phony/src/inet/inet_buildconfig phony/src/lib/core/chip_buildconfig phony/src/lib/support/memory phony/src/lib/core/error phony/src/lib/support/verifymacros phony/src/lib/support/text_only_logging

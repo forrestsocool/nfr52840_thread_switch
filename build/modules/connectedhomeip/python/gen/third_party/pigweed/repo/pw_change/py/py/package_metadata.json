@@ -1,0 +1,21 @@
+{
+  "gn_target_name": "//third_party/pigweed/repo/pw_change/py:py",
+  "inputs": [
+
+  ],
+  "setup_sources": [
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_change/py/pyproject.toml",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_change/py/setup.cfg"
+  ],
+  "sources": [
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_change/py/pw_change/__init__.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_change/py/pw_change/comments.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_change/py/pw_change/main.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_change/py/pw_change/push.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_change/py/pw_change/remote_dest.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_change/py/pw_change/review.py"
+  ],
+  "tests": [
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_change/py/review_test.py"
+  ]
+}

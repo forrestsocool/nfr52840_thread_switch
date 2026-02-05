@@ -1,0 +1,16 @@
+{
+  "gn_target_name": "//third_party/pigweed/repo/pw_env_setup:pigweed_upstream_build_distribution",
+  "inputs": [
+
+  ],
+  "setup_sources": [
+    "python/obj/third_party/pigweed/repo/pw_env_setup/pigweed_upstream_build_distribution/pyproject.toml",
+    "python/obj/third_party/pigweed/repo/pw_env_setup/pigweed_upstream_build_distribution/setup.cfg"
+  ],
+  "sources": [
+
+  ],
+  "tests": [
+
+  ]
+}

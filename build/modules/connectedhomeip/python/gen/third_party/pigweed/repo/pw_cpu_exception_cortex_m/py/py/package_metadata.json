@@ -1,0 +1,19 @@
+{
+  "gn_target_name": "//third_party/pigweed/repo/pw_cpu_exception_cortex_m/py:py",
+  "inputs": [
+
+  ],
+  "setup_sources": [
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_cpu_exception_cortex_m/py/pyproject.toml",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_cpu_exception_cortex_m/py/setup.cfg"
+  ],
+  "sources": [
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_cpu_exception_cortex_m/py/pw_cpu_exception_cortex_m/__init__.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_cpu_exception_cortex_m/py/pw_cpu_exception_cortex_m/cfsr_decoder.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_cpu_exception_cortex_m/py/pw_cpu_exception_cortex_m/cortex_m_constants.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_cpu_exception_cortex_m/py/pw_cpu_exception_cortex_m/exception_analyzer.py"
+  ],
+  "tests": [
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_cpu_exception_cortex_m/py/exception_analyzer_test.py"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "gn_target_name": "//third_party/pigweed/repo/pw_emu/py:py",
+  "inputs": [
+
+  ],
+  "setup_sources": [
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_emu/py/pyproject.toml",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_emu/py/setup.cfg"
+  ],
+  "sources": [
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_emu/py/pw_emu/__init__.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_emu/py/pw_emu/__main__.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_emu/py/pw_emu/core.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_emu/py/pw_emu/frontend.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_emu/py/pw_emu/pigweed_emulators.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_emu/py/pw_emu/qemu.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_emu/py/pw_emu/renode.py"
+  ],
+  "tests": [
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_emu/py/tests/cli_test.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_emu/py/tests/config_helper.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_emu/py/tests/core_test.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_emu/py/tests/frontend_test.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_emu/py/tests/qemu_test.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_emu/py/tests/renode_test.py"
+  ]
+}

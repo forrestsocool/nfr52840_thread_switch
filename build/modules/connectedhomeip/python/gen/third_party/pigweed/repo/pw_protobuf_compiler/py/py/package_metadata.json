@@ -1,0 +1,21 @@
+{
+  "gn_target_name": "//third_party/pigweed/repo/pw_protobuf_compiler/py:py",
+  "inputs": [
+
+  ],
+  "setup_sources": [
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_protobuf_compiler/py/pyproject.toml",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_protobuf_compiler/py/setup.cfg"
+  ],
+  "sources": [
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_protobuf_compiler/py/pw_protobuf_compiler/__init__.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_protobuf_compiler/py/pw_protobuf_compiler/generate_protos.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_protobuf_compiler/py/pw_protobuf_compiler/proto_target_invalid.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_protobuf_compiler/py/pw_protobuf_compiler/python_protos.py"
+  ],
+  "tests": [
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_protobuf_compiler/py/compiled_protos_test.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_protobuf_compiler/py/python_protos_test.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_protobuf_compiler/py/generate_protos_test.py"
+  ]
+}

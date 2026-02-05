@@ -1,0 +1,15 @@
+{
+  "gn_target_name": "//third_party/pigweed/repo/pw_transfer:integration_test_python_client",
+  "inputs": [
+
+  ],
+  "setup_sources": [
+
+  ],
+  "sources": [
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_transfer/integration_test/python_client.py"
+  ],
+  "tests": [
+
+  ]
+}

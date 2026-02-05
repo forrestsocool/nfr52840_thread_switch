@@ -1,0 +1,12 @@
+{
+  "dependencies": [
+
+  ],
+  "label": "//third_party/pigweed/repo/pw_system:device_service_proto.pwpb_rpc",
+  "nested_in_python_package": "",
+  "package": "pw_system_protos",
+  "protoc_outputs": [
+    "protocol_buffer/gen/third_party/pigweed/repo/pw_system/device_service_proto.proto_library/pwpb_rpc/pw_system_protos/device_service.rpc.pwpb.h"
+  ],
+  "root": "protocol_buffer/gen/third_party/pigweed/repo/pw_system/device_service_proto.proto_library/pwpb_rpc"
+}

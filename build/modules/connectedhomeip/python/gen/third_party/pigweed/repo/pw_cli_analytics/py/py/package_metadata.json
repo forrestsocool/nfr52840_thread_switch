@@ -1,0 +1,21 @@
+{
+  "gn_target_name": "//third_party/pigweed/repo/pw_cli_analytics/py:py",
+  "inputs": [
+
+  ],
+  "setup_sources": [
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_cli_analytics/py/pyproject.toml",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_cli_analytics/py/setup.cfg"
+  ],
+  "sources": [
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_cli_analytics/py/pw_cli_analytics/__init__.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_cli_analytics/py/pw_cli_analytics/__main__.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_cli_analytics/py/pw_cli_analytics/analytics.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_cli_analytics/py/pw_cli_analytics/cli.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_cli_analytics/py/pw_cli_analytics/config.py"
+  ],
+  "tests": [
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_cli_analytics/py/analytics_config_test.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_cli_analytics/py/analytics_test.py"
+  ]
+}

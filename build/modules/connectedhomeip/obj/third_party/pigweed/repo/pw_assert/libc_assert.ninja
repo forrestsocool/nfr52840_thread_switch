@@ -1,0 +1,6 @@
+defines = -DNDEBUG
+framework_dirs =
+include_dirs = -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_assert/public -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_assert/assert_compatibility_public_overrides -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_preprocessor/public -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_polyfill/public
+target_output_name = libc_assert
+
+

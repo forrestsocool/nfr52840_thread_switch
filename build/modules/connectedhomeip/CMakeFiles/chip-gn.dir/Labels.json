@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "E:/PycharmProjects/matter/switch/build/modules/connectedhomeip/CMakeFiles/chip-gn"
+		},
+		{
+			"file" : "E:/PycharmProjects/matter/switch/build/modules/connectedhomeip/CMakeFiles/chip-gn.rule"
+		},
+		{
+			"file" : "E:/PycharmProjects/matter/switch/build/modules/connectedhomeip/CMakeFiles/chip-gn-complete.rule"
+		},
+		{
+			"file" : "E:/PycharmProjects/matter/switch/build/modules/connectedhomeip/src/chip-gn-stamp/chip-gn-build.rule"
+		},
+		{
+			"file" : "E:/PycharmProjects/matter/switch/build/modules/connectedhomeip/src/chip-gn-stamp/chip-gn-configure.rule"
+		},
+		{
+			"file" : "E:/PycharmProjects/matter/switch/build/modules/connectedhomeip/src/chip-gn-stamp/chip-gn-download.rule"
+		},
+		{
+			"file" : "E:/PycharmProjects/matter/switch/build/modules/connectedhomeip/src/chip-gn-stamp/chip-gn-install.rule"
+		},
+		{
+			"file" : "E:/PycharmProjects/matter/switch/build/modules/connectedhomeip/src/chip-gn-stamp/chip-gn-mkdir.rule"
+		},
+		{
+			"file" : "E:/PycharmProjects/matter/switch/build/modules/connectedhomeip/src/chip-gn-stamp/chip-gn-patch.rule"
+		},
+		{
+			"file" : "E:/PycharmProjects/matter/switch/build/modules/connectedhomeip/src/chip-gn-stamp/chip-gn-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"chip-gn"
+		],
+		"name" : "chip-gn"
+	}
+}

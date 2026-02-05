@@ -1,0 +1,15 @@
+{
+  "gn_target_name": "//third_party/pigweed/repo/pw_transfer:integration_test_fixture",
+  "inputs": [
+
+  ],
+  "setup_sources": [
+
+  ],
+  "sources": [
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_transfer/integration_test/test_fixture.py"
+  ],
+  "tests": [
+
+  ]
+}

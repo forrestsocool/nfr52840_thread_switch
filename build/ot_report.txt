@@ -1,0 +1,11 @@
+################### OPENTHREAD REPORT ###################
++ Target device: nrf52840
++ Thread version: v1.4
++ OpenThread library feature set: Minimal Thread Device (MTD)
++ OpenThread Library: openthread/lib/nrf52840/soft-float/v1.4/mtd
++ OpenThread NCS revision: ncs-thread-reference-20250402
++ OpenThread NCS SHA: 0e2666713
++ NCS revision: v3.2.1
++ NCS SHA: d8887f6f32
++ No differences in the used Thread library in comparison to the NCS v3.0.0 release.
+###################        END        ###################

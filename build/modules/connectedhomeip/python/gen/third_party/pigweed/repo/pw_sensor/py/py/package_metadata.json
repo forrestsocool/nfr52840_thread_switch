@@ -1,0 +1,22 @@
+{
+  "gn_target_name": "//third_party/pigweed/repo/pw_sensor/py:py",
+  "inputs": [
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_sensor/py/pw_sensor/dependency_schema.json",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_sensor/py/pw_sensor/metadata_schema.json",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_sensor/py/pw_sensor/resolved_schema.json",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_sensor/py/pw_sensor/templates/cpp_constants.jinja"
+  ],
+  "setup_sources": [
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_sensor/py/pyproject.toml",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_sensor/py/setup.cfg"
+  ],
+  "sources": [
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_sensor/py/pw_sensor/__init__.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_sensor/py/pw_sensor/constants_generator.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_sensor/py/pw_sensor/sensor_desc.py",
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_sensor/py/pw_sensor/validator.py"
+  ],
+  "tests": [
+    "C:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_sensor/py/validator_test.py"
+  ]
+}

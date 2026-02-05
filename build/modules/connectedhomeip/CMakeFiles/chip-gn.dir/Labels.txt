@@ -1,0 +1,13 @@
+# Target labels
+ chip-gn
+# Source files and their labels
+E:/PycharmProjects/matter/switch/build/modules/connectedhomeip/CMakeFiles/chip-gn
+E:/PycharmProjects/matter/switch/build/modules/connectedhomeip/CMakeFiles/chip-gn.rule
+E:/PycharmProjects/matter/switch/build/modules/connectedhomeip/CMakeFiles/chip-gn-complete.rule
+E:/PycharmProjects/matter/switch/build/modules/connectedhomeip/src/chip-gn-stamp/chip-gn-build.rule
+E:/PycharmProjects/matter/switch/build/modules/connectedhomeip/src/chip-gn-stamp/chip-gn-configure.rule
+E:/PycharmProjects/matter/switch/build/modules/connectedhomeip/src/chip-gn-stamp/chip-gn-download.rule
+E:/PycharmProjects/matter/switch/build/modules/connectedhomeip/src/chip-gn-stamp/chip-gn-install.rule
+E:/PycharmProjects/matter/switch/build/modules/connectedhomeip/src/chip-gn-stamp/chip-gn-mkdir.rule
+E:/PycharmProjects/matter/switch/build/modules/connectedhomeip/src/chip-gn-stamp/chip-gn-patch.rule
+E:/PycharmProjects/matter/switch/build/modules/connectedhomeip/src/chip-gn-stamp/chip-gn-update.rule

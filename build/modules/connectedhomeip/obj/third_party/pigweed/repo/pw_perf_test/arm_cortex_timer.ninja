@@ -1,0 +1,6 @@
+defines = -DNDEBUG
+framework_dirs =
+include_dirs = -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_perf_test/public -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_perf_test/arm_cortex_cyccnt_public_overrides
+target_output_name = arm_cortex_timer
+
+

@@ -1,0 +1,14 @@
+{
+  "dependencies": [
+
+  ],
+  "label": "//third_party/pigweed/repo/pw_build:workflows_proto.pwpb",
+  "nested_in_python_package": "",
+  "package": "pw_build",
+  "protoc_outputs": [
+    "protocol_buffer/gen/third_party/pigweed/repo/pw_build/workflows_proto.proto_library/pwpb/pw_build/proto/build_driver.pwpb.h",
+    "protocol_buffer/gen/third_party/pigweed/repo/pw_build/workflows_proto.proto_library/pwpb/pw_build/proto/pigweed_build_driver.pwpb.h",
+    "protocol_buffer/gen/third_party/pigweed/repo/pw_build/workflows_proto.proto_library/pwpb/pw_build/proto/workflows.pwpb.h"
+  ],
+  "root": "protocol_buffer/gen/third_party/pigweed/repo/pw_build/workflows_proto.proto_library/pwpb"
+}

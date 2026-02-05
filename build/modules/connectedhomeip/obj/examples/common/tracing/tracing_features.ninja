@@ -1,0 +1,7 @@
+defines = -DNDEBUG
+framework_dirs =
+include_dirs =
+target_output_name = tracing_features
+
+
+build phony/examples/common/tracing/tracing_features: phony || phony/examples/common/tracing/gen_tracing_features
