@@ -1,7 +1,0 @@
-defines = -DNDEBUG -DCHIP_HAVE_CONFIG_H=1
-framework_dirs =
-include_dirs = -IC$:/ncs/v3.2.1/modules/lib/matter/src/include -IC$:/ncs/v3.2.1/modules/lib/matter/src -Igen/include
-target_output_name = ble_config_header
-
-
-build phony/src/ble/ble_config_header: phony || phony/src/system/system_config_header phony/src/ble/ble_buildconfig phony/src/platform/platform_buildconfig phony/src/system/system_buildconfig phony/src/app/icd/server/icd-server-config phony/src/app/icd/server/icd-server-buildconfig

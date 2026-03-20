@@ -1,7 +1,0 @@
-defines = -DNDEBUG
-framework_dirs =
-include_dirs = -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_unit_test/public -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_preprocessor/public -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_polyfill/public
-target_output_name = printf_event_handler
-
-
-build phony/third_party/pigweed/repo/pw_unit_test/printf_event_handler: phony || phony/third_party/pigweed/repo/pw_unit_test/googletest_style_event_handler

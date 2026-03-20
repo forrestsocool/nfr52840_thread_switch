@@ -76,8 +76,7 @@
 
 // Parallel array data (*cluster*, attribute, privilege) for write attribute
 #define GENERATED_ACCESS_WRITE_ATTRIBUTE__CLUSTER { \
-    0x00000006, /* Cluster: On/Off, Attribute: StartUpOnOff, Privilege: manage */ \
-    0x00000008, /* Cluster: Level Control, Attribute: StartUpCurrentLevel, Privilege: manage */ \
+    0x0000001E, /* Cluster: Binding, Attribute: Binding, Privilege: manage */ \
     0x0000001F, /* Cluster: Access Control, Attribute: ACL, Privilege: administer */ \
     0x0000001F, /* Cluster: Access Control, Attribute: Extension, Privilege: administer */ \
     0x00000028, /* Cluster: Basic Information, Attribute: NodeLabel, Privilege: manage */ \
@@ -90,8 +89,7 @@
 
 // Parallel array data (cluster, *attribute*, privilege) for write attribute
 #define GENERATED_ACCESS_WRITE_ATTRIBUTE__ATTRIBUTE { \
-    0x00004003, /* Cluster: On/Off, Attribute: StartUpOnOff, Privilege: manage */ \
-    0x00004000, /* Cluster: Level Control, Attribute: StartUpCurrentLevel, Privilege: manage */ \
+    0x00000000, /* Cluster: Binding, Attribute: Binding, Privilege: manage */ \
     0x00000000, /* Cluster: Access Control, Attribute: ACL, Privilege: administer */ \
     0x00000001, /* Cluster: Access Control, Attribute: Extension, Privilege: administer */ \
     0x00000005, /* Cluster: Basic Information, Attribute: NodeLabel, Privilege: manage */ \
@@ -104,8 +102,7 @@
 
 // Parallel array data (cluster, attribute, *privilege*) for write attribute
 #define GENERATED_ACCESS_WRITE_ATTRIBUTE__PRIVILEGE { \
-    chip::Access::Privilege::kManage, /* Cluster: On/Off, Attribute: StartUpOnOff, Privilege: manage */ \
-    chip::Access::Privilege::kManage, /* Cluster: Level Control, Attribute: StartUpCurrentLevel, Privilege: manage */ \
+    chip::Access::Privilege::kManage, /* Cluster: Binding, Attribute: Binding, Privilege: manage */ \
     chip::Access::Privilege::kAdminister, /* Cluster: Access Control, Attribute: ACL, Privilege: administer */ \
     chip::Access::Privilege::kAdminister, /* Cluster: Access Control, Attribute: Extension, Privilege: administer */ \
     chip::Access::Privilege::kManage, /* Cluster: Basic Information, Attribute: NodeLabel, Privilege: manage */ \
@@ -121,7 +118,6 @@
 // Parallel array data (*cluster*, command, privilege) for invoke command
 #define GENERATED_ACCESS_INVOKE_COMMAND__CLUSTER { \
     0x00000003, /* Cluster: Identify, Command: Identify, Privilege: manage */ \
-    0x00000003, /* Cluster: Identify, Command: TriggerEffect, Privilege: manage */ \
     0x00000004, /* Cluster: Groups, Command: AddGroup, Privilege: manage */ \
     0x00000004, /* Cluster: Groups, Command: RemoveGroup, Privilege: manage */ \
     0x00000004, /* Cluster: Groups, Command: RemoveAllGroups, Privilege: manage */ \
@@ -160,7 +156,6 @@
 // Parallel array data (cluster, *command*, privilege) for invoke command
 #define GENERATED_ACCESS_INVOKE_COMMAND__COMMAND { \
     0x00000000, /* Cluster: Identify, Command: Identify, Privilege: manage */ \
-    0x00000040, /* Cluster: Identify, Command: TriggerEffect, Privilege: manage */ \
     0x00000000, /* Cluster: Groups, Command: AddGroup, Privilege: manage */ \
     0x00000003, /* Cluster: Groups, Command: RemoveGroup, Privilege: manage */ \
     0x00000004, /* Cluster: Groups, Command: RemoveAllGroups, Privilege: manage */ \
@@ -199,7 +194,6 @@
 // Parallel array data (cluster, command, *privilege*) for invoke command
 #define GENERATED_ACCESS_INVOKE_COMMAND__PRIVILEGE { \
     chip::Access::Privilege::kManage, /* Cluster: Identify, Command: Identify, Privilege: manage */ \
-    chip::Access::Privilege::kManage, /* Cluster: Identify, Command: TriggerEffect, Privilege: manage */ \
     chip::Access::Privilege::kManage, /* Cluster: Groups, Command: AddGroup, Privilege: manage */ \
     chip::Access::Privilege::kManage, /* Cluster: Groups, Command: RemoveGroup, Privilege: manage */ \
     chip::Access::Privilege::kManage, /* Cluster: Groups, Command: RemoveAllGroups, Privilege: manage */ \

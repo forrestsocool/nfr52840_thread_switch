@@ -1,7 +1,0 @@
-defines = -DNDEBUG
-framework_dirs =
-include_dirs = -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_thread/public -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_chrono/public -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_preprocessor/public -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_polyfill/public
-target_output_name = sleep.facade
-
-
-build phony/third_party/pigweed/repo/pw_thread/sleep.facade: phony || phony/third_party/pigweed/repo/pw_chrono/system_clock

@@ -1,7 +1,0 @@
-defines = -DNDEBUG
-framework_dirs =
-include_dirs = -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_async2/public -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_sync/public -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_preprocessor/public -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_polyfill/public -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_toolchain/public
-target_output_name = internal
-
-
-build phony/third_party/pigweed/repo/pw_async2/internal: phony || phony/third_party/pigweed/repo/pw_sync/interrupt_spin_lock

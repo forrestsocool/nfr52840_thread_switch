@@ -1,6 +1,0 @@
-defines = -DNDEBUG
-framework_dirs =
-include_dirs = -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_build/public -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/third_party/fuchsia/repo/sdk/lib/stdcompat/include
-target_output_name = linker_symbol
-
-

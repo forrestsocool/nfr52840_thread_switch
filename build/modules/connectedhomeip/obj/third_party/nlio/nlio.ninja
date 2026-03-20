@@ -1,6 +1,0 @@
-defines = -DNDEBUG
-framework_dirs =
-include_dirs = -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/nlio/repo/include
-target_output_name = nlio
-
-

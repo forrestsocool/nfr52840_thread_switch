@@ -33,10 +33,9 @@ target_compile_options(app PRIVATE -Wno-deprecated-declarations)
 
 target_sources(app PRIVATE
   src/app_task.cpp
-  src/light_switch.cpp
   src/main.cpp
-  src/shell_commands.cpp
-  ${ZEPHYR_NRF_MODULE_DIR}/samples/matter/common/src/binding/binding_handler.cpp
+  src/zcl_callbacks.cpp
+  ${CHIP_ROOT}/src/app/persistence/DeferredAttributePersistenceProvider.cpp
 )
 
 ncs_configure_data_model()

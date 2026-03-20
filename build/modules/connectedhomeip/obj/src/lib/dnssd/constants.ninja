@@ -1,7 +1,0 @@
-defines = -DNDEBUG -DCHIP_HAVE_CONFIG_H=1
-framework_dirs =
-include_dirs = -IC$:/ncs/v3.2.1/modules/lib/matter/src/include -IC$:/ncs/v3.2.1/modules/lib/matter/src -Igen/include -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/nlassert/repo/include -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/nlio/repo/include
-target_output_name = constants
-
-
-build phony/src/lib/dnssd/constants: phony || obj/src/lib/support/lib/libSupportLayer.a phony/src/lib/support/chip_version_header phony/src/lib/support/memory phony/src/lib/core/error phony/src/lib/core/chip_config_header phony/src/ble/ble_config_header phony/src/system/system_config_header phony/src/system/system_buildconfig phony/src/platform/platform_buildconfig phony/src/app/icd/server/icd-server-config phony/src/app/icd/server/icd-server-buildconfig phony/src/ble/ble_buildconfig phony/src/inet/inet_config_header phony/src/inet/inet_buildconfig phony/src/lib/core/chip_buildconfig phony/src/lib/support/span phony/src/lib/support/verifymacros phony/src/lib/support/text_only_logging phony/src/lib/core/types phony/src/platform/platform_config_header

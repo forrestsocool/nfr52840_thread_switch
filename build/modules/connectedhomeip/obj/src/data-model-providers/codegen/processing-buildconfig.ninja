@@ -1,7 +1,0 @@
-defines = -DNDEBUG
-framework_dirs =
-include_dirs =
-target_output_name = processing-buildconfig
-
-
-build phony/src/data-model-providers/codegen/processing-buildconfig: phony || phony/src/data-model-providers/codegen/gen_processing-buildconfig

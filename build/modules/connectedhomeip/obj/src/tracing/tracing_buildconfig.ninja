@@ -1,7 +1,0 @@
-defines = -DNDEBUG
-framework_dirs =
-include_dirs =
-target_output_name = tracing_buildconfig
-
-
-build phony/src/tracing/tracing_buildconfig: phony || phony/src/tracing/gen_tracing_buildconfig

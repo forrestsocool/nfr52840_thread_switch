@@ -1,6 +1,0 @@
-defines = -DNDEBUG
-framework_dirs =
-include_dirs = -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_toolchain/public -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_polyfill/public
-target_output_name = no_destructor
-
-

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Nordic Semiconductor ASA
+ * Copyright (c) 2021 Nordic Semiconductor ASA
  *
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
@@ -7,8 +7,8 @@
 #pragma once
 
 #include "board/board.h"
-
 #include <platform/CHIPDeviceLayer.h>
+#include <zephyr/drivers/gpio.h>
 
 struct k_timer;
 struct Identify;
@@ -22,19 +22,21 @@ public:
 	};
 
 	CHIP_ERROR StartApp();
-
 	void UpdateClusterState();
 
-private:
-	enum Timer : uint8_t { DimmerTrigger, Dimmer };
+	// Called from ZCL callback when remote command (Home App) changes the OnOff attribute
+	void InitiateAction(bool actionOn);
 
+private:
 	CHIP_ERROR Init();
 
-	static void DimmerTriggerEventHandler();
-	static void TimerEventHandler(const Timer &event);
+	// Handlers
 	static void ButtonEventHandler(Nrf::ButtonState state, Nrf::ButtonMask hasChanged);
+	static void SensePinChangedHandler(const struct device *dev, struct gpio_callback *cb, uint32_t pins);
+	static void PostEventTask(void *event);
 
-	static void StartTimer(Timer, uint32_t);
-	static void CancelTimer(Timer);
-	static void UserTimerTimeoutCallback(k_timer *timer);
+	// Zephyr GPIO configurations for Bath Heater
+	struct gpio_dt_spec mCtrlPin;
+	struct gpio_dt_spec mSensePin;
+	struct gpio_callback mSenseCbData;
 };

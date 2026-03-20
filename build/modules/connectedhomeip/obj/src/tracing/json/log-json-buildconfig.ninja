@@ -1,7 +1,0 @@
-defines = -DNDEBUG
-framework_dirs =
-include_dirs =
-target_output_name = log-json-buildconfig
-
-
-build phony/src/tracing/json/log-json-buildconfig: phony || phony/src/tracing/json/gen_log-json-buildconfig

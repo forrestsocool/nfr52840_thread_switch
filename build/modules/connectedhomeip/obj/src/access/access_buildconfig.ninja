@@ -1,7 +1,0 @@
-defines = -DNDEBUG
-framework_dirs =
-include_dirs =
-target_output_name = access_buildconfig
-
-
-build phony/src/access/access_buildconfig: phony || phony/src/access/gen_access_buildconfig

@@ -136,115 +136,6 @@ namespace app
 
 		} // namespace Groups
 
-		namespace LevelControl
-		{
-
-			Protocols::InteractionModel::Status
-			DispatchServerCommand(CommandHandler *apCommandObj, const ConcreteCommandPath &aCommandPath,
-					      TLV::TLVReader &aDataTlv)
-			{
-				CHIP_ERROR TLVError = CHIP_NO_ERROR;
-				bool wasHandled = false;
-				{
-					switch (aCommandPath.mCommandId) {
-					case Commands::MoveToLevel::Id: {
-						Commands::MoveToLevel::DecodableType commandData;
-						TLVError = DataModel::Decode(aDataTlv, commandData);
-						if (TLVError == CHIP_NO_ERROR) {
-							wasHandled = emberAfLevelControlClusterMoveToLevelCallback(
-								apCommandObj, aCommandPath, commandData);
-						}
-						break;
-					}
-					case Commands::Move::Id: {
-						Commands::Move::DecodableType commandData;
-						TLVError = DataModel::Decode(aDataTlv, commandData);
-						if (TLVError == CHIP_NO_ERROR) {
-							wasHandled = emberAfLevelControlClusterMoveCallback(
-								apCommandObj, aCommandPath, commandData);
-						}
-						break;
-					}
-					case Commands::Step::Id: {
-						Commands::Step::DecodableType commandData;
-						TLVError = DataModel::Decode(aDataTlv, commandData);
-						if (TLVError == CHIP_NO_ERROR) {
-							wasHandled = emberAfLevelControlClusterStepCallback(
-								apCommandObj, aCommandPath, commandData);
-						}
-						break;
-					}
-					case Commands::Stop::Id: {
-						Commands::Stop::DecodableType commandData;
-						TLVError = DataModel::Decode(aDataTlv, commandData);
-						if (TLVError == CHIP_NO_ERROR) {
-							wasHandled = emberAfLevelControlClusterStopCallback(
-								apCommandObj, aCommandPath, commandData);
-						}
-						break;
-					}
-					case Commands::MoveToLevelWithOnOff::Id: {
-						Commands::MoveToLevelWithOnOff::DecodableType commandData;
-						TLVError = DataModel::Decode(aDataTlv, commandData);
-						if (TLVError == CHIP_NO_ERROR) {
-							wasHandled =
-								emberAfLevelControlClusterMoveToLevelWithOnOffCallback(
-									apCommandObj, aCommandPath, commandData);
-						}
-						break;
-					}
-					case Commands::MoveWithOnOff::Id: {
-						Commands::MoveWithOnOff::DecodableType commandData;
-						TLVError = DataModel::Decode(aDataTlv, commandData);
-						if (TLVError == CHIP_NO_ERROR) {
-							wasHandled = emberAfLevelControlClusterMoveWithOnOffCallback(
-								apCommandObj, aCommandPath, commandData);
-						}
-						break;
-					}
-					case Commands::StepWithOnOff::Id: {
-						Commands::StepWithOnOff::DecodableType commandData;
-						TLVError = DataModel::Decode(aDataTlv, commandData);
-						if (TLVError == CHIP_NO_ERROR) {
-							wasHandled = emberAfLevelControlClusterStepWithOnOffCallback(
-								apCommandObj, aCommandPath, commandData);
-						}
-						break;
-					}
-					case Commands::StopWithOnOff::Id: {
-						Commands::StopWithOnOff::DecodableType commandData;
-						TLVError = DataModel::Decode(aDataTlv, commandData);
-						if (TLVError == CHIP_NO_ERROR) {
-							wasHandled = emberAfLevelControlClusterStopWithOnOffCallback(
-								apCommandObj, aCommandPath, commandData);
-						}
-						break;
-					}
-					default: {
-						// Unrecognized command ID, error status will apply.
-						ChipLogError(Zcl,
-							     "Unknown command " ChipLogFormatMEI
-							     " for cluster " ChipLogFormatMEI,
-							     ChipLogValueMEI(aCommandPath.mCommandId),
-							     ChipLogValueMEI(aCommandPath.mClusterId));
-						return Protocols::InteractionModel::Status::UnsupportedCommand;
-					}
-					}
-				}
-
-				if (CHIP_NO_ERROR != TLVError || !wasHandled) {
-					ChipLogProgress(Zcl, "Failed to dispatch command, TLVError=%" CHIP_ERROR_FORMAT,
-							TLVError.Format());
-					return Protocols::InteractionModel::Status::InvalidCommand;
-				}
-
-				// We use success as a marker that no special handling is required
-				// This is to avoid having a std::optional which uses slightly more code.
-				return Protocols::InteractionModel::Status::Success;
-			}
-
-		} // namespace LevelControl
-
 		namespace OtaSoftwareUpdateRequestor
 		{
 
@@ -290,96 +181,6 @@ namespace app
 			}
 
 		} // namespace OtaSoftwareUpdateRequestor
-
-		namespace OnOff
-		{
-
-			Protocols::InteractionModel::Status
-			DispatchServerCommand(CommandHandler *apCommandObj, const ConcreteCommandPath &aCommandPath,
-					      TLV::TLVReader &aDataTlv)
-			{
-				CHIP_ERROR TLVError = CHIP_NO_ERROR;
-				bool wasHandled = false;
-				{
-					switch (aCommandPath.mCommandId) {
-					case Commands::Off::Id: {
-						Commands::Off::DecodableType commandData;
-						TLVError = DataModel::Decode(aDataTlv, commandData);
-						if (TLVError == CHIP_NO_ERROR) {
-							wasHandled = emberAfOnOffClusterOffCallback(
-								apCommandObj, aCommandPath, commandData);
-						}
-						break;
-					}
-					case Commands::On::Id: {
-						Commands::On::DecodableType commandData;
-						TLVError = DataModel::Decode(aDataTlv, commandData);
-						if (TLVError == CHIP_NO_ERROR) {
-							wasHandled = emberAfOnOffClusterOnCallback(
-								apCommandObj, aCommandPath, commandData);
-						}
-						break;
-					}
-					case Commands::Toggle::Id: {
-						Commands::Toggle::DecodableType commandData;
-						TLVError = DataModel::Decode(aDataTlv, commandData);
-						if (TLVError == CHIP_NO_ERROR) {
-							wasHandled = emberAfOnOffClusterToggleCallback(
-								apCommandObj, aCommandPath, commandData);
-						}
-						break;
-					}
-					case Commands::OffWithEffect::Id: {
-						Commands::OffWithEffect::DecodableType commandData;
-						TLVError = DataModel::Decode(aDataTlv, commandData);
-						if (TLVError == CHIP_NO_ERROR) {
-							wasHandled = emberAfOnOffClusterOffWithEffectCallback(
-								apCommandObj, aCommandPath, commandData);
-						}
-						break;
-					}
-					case Commands::OnWithRecallGlobalScene::Id: {
-						Commands::OnWithRecallGlobalScene::DecodableType commandData;
-						TLVError = DataModel::Decode(aDataTlv, commandData);
-						if (TLVError == CHIP_NO_ERROR) {
-							wasHandled = emberAfOnOffClusterOnWithRecallGlobalSceneCallback(
-								apCommandObj, aCommandPath, commandData);
-						}
-						break;
-					}
-					case Commands::OnWithTimedOff::Id: {
-						Commands::OnWithTimedOff::DecodableType commandData;
-						TLVError = DataModel::Decode(aDataTlv, commandData);
-						if (TLVError == CHIP_NO_ERROR) {
-							wasHandled = emberAfOnOffClusterOnWithTimedOffCallback(
-								apCommandObj, aCommandPath, commandData);
-						}
-						break;
-					}
-					default: {
-						// Unrecognized command ID, error status will apply.
-						ChipLogError(Zcl,
-							     "Unknown command " ChipLogFormatMEI
-							     " for cluster " ChipLogFormatMEI,
-							     ChipLogValueMEI(aCommandPath.mCommandId),
-							     ChipLogValueMEI(aCommandPath.mClusterId));
-						return Protocols::InteractionModel::Status::UnsupportedCommand;
-					}
-					}
-				}
-
-				if (CHIP_NO_ERROR != TLVError || !wasHandled) {
-					ChipLogProgress(Zcl, "Failed to dispatch command, TLVError=%" CHIP_ERROR_FORMAT,
-							TLVError.Format());
-					return Protocols::InteractionModel::Status::InvalidCommand;
-				}
-
-				// We use success as a marker that no special handling is required
-				// This is to avoid having a std::optional which uses slightly more code.
-				return Protocols::InteractionModel::Status::Success;
-			}
-
-		} // namespace OnOff
 
 		namespace ThreadNetworkDiagnostics
 		{
@@ -438,16 +239,9 @@ namespace app
 		case Clusters::Groups::Id:
 			errorStatus = Clusters::Groups::DispatchServerCommand(apCommandObj, aCommandPath, aReader);
 			break;
-		case Clusters::LevelControl::Id:
-			errorStatus =
-				Clusters::LevelControl::DispatchServerCommand(apCommandObj, aCommandPath, aReader);
-			break;
 		case Clusters::OtaSoftwareUpdateRequestor::Id:
 			errorStatus = Clusters::OtaSoftwareUpdateRequestor::DispatchServerCommand(
 				apCommandObj, aCommandPath, aReader);
-			break;
-		case Clusters::OnOff::Id:
-			errorStatus = Clusters::OnOff::DispatchServerCommand(apCommandObj, aCommandPath, aReader);
 			break;
 		case Clusters::ThreadNetworkDiagnostics::Id:
 			errorStatus = Clusters::ThreadNetworkDiagnostics::DispatchServerCommand(apCommandObj,

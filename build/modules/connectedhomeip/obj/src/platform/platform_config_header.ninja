@@ -1,7 +1,0 @@
-defines = -DNDEBUG
-framework_dirs =
-include_dirs =
-target_output_name = platform_config_header
-
-
-build phony/src/platform/platform_config_header: phony || phony/src/platform/platform_buildconfig phony/src/app/icd/server/icd-server-config phony/src/app/icd/server/icd-server-buildconfig

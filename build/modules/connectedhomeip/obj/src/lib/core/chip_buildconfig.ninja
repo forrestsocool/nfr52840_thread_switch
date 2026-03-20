@@ -1,7 +1,0 @@
-defines = -DNDEBUG
-framework_dirs =
-include_dirs =
-target_output_name = chip_buildconfig
-
-
-build phony/src/lib/core/chip_buildconfig: phony || phony/src/lib/core/gen_chip_buildconfig

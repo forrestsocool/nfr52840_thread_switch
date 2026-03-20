@@ -1,6 +1,0 @@
-defines = -DNDEBUG
-framework_dirs =
-include_dirs = -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_thread_stl/thread_creation_public_overrides
-target_output_name = thread_creation
-
-

@@ -1,10 +1,60 @@
+/*
+ * Flash partition layout for Adafruit Bootloader + SoftDevice S140 v6.1.1
+ *
+ * 0x00000 - 0x26000  : SoftDevice S140 v6.1.1 (including MBR)
+ * 0x26000 - 0xEC000  : Application (792 KB)
+ * 0xEC000 - 0xF4000  : Storage / NVS (32 KB)
+ * 0xF4000 - 0x100000 : Adafruit Bootloader (48 KB)
+ */
 
 / {
+	chosen {
+		zephyr,code-partition = &slot0_partition;
+	};
+
 	aliases {
 		sw0 = &button0;
 		sw1 = &button1;
 		sw2 = &button2;
 		sw3 = &button3;
+		led0 = &led_0;
+		led1 = &led_1;
+		led2 = &led_2;
+		led3 = &led_3;
+		sense1 = &sense_pin_1;
+		ctrl1  = &ctrl_pin_1;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		led_0: led_0 {
+			gpios = <&gpio1 11 GPIO_ACTIVE_LOW>;
+			label = "Matter LED 0";
+		};
+		led_1: led_1 {
+			gpios = <&gpio1 12 GPIO_ACTIVE_LOW>;
+			label = "Matter LED 1";
+		};
+		led_2: led_2 {
+			gpios = <&gpio1 13 GPIO_ACTIVE_LOW>;
+			label = "Matter LED 2";
+		};
+		led_3: led_3 {
+			gpios = <&gpio1 14 GPIO_ACTIVE_LOW>;
+			label = "Matter LED 3";
+		};
+		ctrl_pin_1: ctrl_pin_1 {
+			gpios = <&gpio0 17 GPIO_ACTIVE_HIGH>;
+			label = "Bath Heater Control Pin 1";
+		};
+	};
+
+	sense_inputs {
+		compatible = "gpio-keys";
+		sense_pin_1: sense_pin_1 {
+			gpios = <&gpio0 15 (GPIO_PULL_DOWN | GPIO_ACTIVE_HIGH)>;
+			label = "Bath Heater Sense Pin 1";
+		};
 	};
 
 	buttons {
@@ -27,3 +77,42 @@
 		};
 	};
 };
+
+/* Delete default partitions from nrf52840_partition.dtsi */
+&flash0 {
+	/delete-node/ partitions;
+};
+
+/* Re-define partitions for Adafruit Bootloader + S140 v6.1.1 */
+&flash0 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		/* SoftDevice S140 v6.1.1 (includes MBR at 0x0) */
+		boot_partition: partition@0 {
+			label = "softdevice";
+			reg = <0x0 0x26000>;
+		};
+
+		/* Application */
+		slot0_partition: partition@26000 {
+			label = "image-0";
+			reg = <0x26000 0xC6000>;
+		};
+
+		/* Storage / NVS */
+		storage_partition: partition@ec000 {
+			label = "storage";
+			reg = <0xEC000 0x8000>;
+		};
+
+		/* Adafruit Bootloader */
+		partition@f4000 {
+			label = "adafruit_boot";
+			reg = <0xF4000 0xC000>;
+		};
+	};
+};
+

@@ -4,15 +4,15 @@ adafruit_boot:
   region: flash_primary
   size: 0xc000
 app:
-  address: 0x27000
+  address: 0x26000
   end_address: 0xec000
   region: flash_primary
-  size: 0xc5000
+  size: 0xc6000
 sd_partition:
   address: 0x0
-  end_address: 0x27000
+  end_address: 0x26000
   region: flash_primary
-  size: 0x27000
+  size: 0x26000
 storage:
   address: 0xec000
   end_address: 0xf4000

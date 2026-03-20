@@ -21,9 +21,8 @@
 
 void MatterIdentifyPluginServerInitCallback();
 void MatterGroupsPluginServerInitCallback();
-void MatterOnOffPluginServerInitCallback();
-void MatterLevelControlPluginServerInitCallback();
 void MatterDescriptorPluginServerInitCallback();
+void MatterBindingPluginServerInitCallback();
 void MatterAccessControlPluginServerInitCallback();
 void MatterBasicInformationPluginServerInitCallback();
 void MatterOtaSoftwareUpdateRequestorPluginServerInitCallback();
@@ -37,13 +36,13 @@ void MatterWiFiNetworkDiagnosticsPluginServerInitCallback();
 void MatterAdministratorCommissioningPluginServerInitCallback();
 void MatterOperationalCredentialsPluginServerInitCallback();
 void MatterGroupKeyManagementPluginServerInitCallback();
+void MatterIcdManagementPluginServerInitCallback();
 
 #define MATTER_PLUGINS_INIT                                                                                            \
 	MatterIdentifyPluginServerInitCallback();                                                                      \
 	MatterGroupsPluginServerInitCallback();                                                                        \
-	MatterOnOffPluginServerInitCallback();                                                                         \
-	MatterLevelControlPluginServerInitCallback();                                                                  \
 	MatterDescriptorPluginServerInitCallback();                                                                    \
+	MatterBindingPluginServerInitCallback();                                                                       \
 	MatterAccessControlPluginServerInitCallback();                                                                 \
 	MatterBasicInformationPluginServerInitCallback();                                                              \
 	MatterOtaSoftwareUpdateRequestorPluginServerInitCallback();                                                    \
@@ -56,4 +55,5 @@ void MatterGroupKeyManagementPluginServerInitCallback();
 	MatterWiFiNetworkDiagnosticsPluginServerInitCallback();                                                        \
 	MatterAdministratorCommissioningPluginServerInitCallback();                                                    \
 	MatterOperationalCredentialsPluginServerInitCallback();                                                        \
-	MatterGroupKeyManagementPluginServerInitCallback();
+	MatterGroupKeyManagementPluginServerInitCallback();                                                            \
+	MatterIcdManagementPluginServerInitCallback();

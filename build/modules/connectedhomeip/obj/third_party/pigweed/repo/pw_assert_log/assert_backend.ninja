@@ -1,6 +1,0 @@
-defines = -DNDEBUG
-framework_dirs =
-include_dirs = -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_assert_log/assert_backend_public_overrides -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_assert_log/public -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_log_basic/public_overrides -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_log_basic/public -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_preprocessor/public -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_polyfill/public -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_log/public
-target_output_name = assert_backend
-
-

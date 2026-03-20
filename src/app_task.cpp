@@ -1,18 +1,19 @@
 /*
- * Copyright (c) 2022 Nordic Semiconductor ASA
+ * Copyright (c) 2021 Nordic Semiconductor ASA
  *
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
 #include "app_task.h"
-
-#include "light_switch.h"
-
 #include "app/matter_init.h"
 #include "app/task_executor.h"
-#include "board/board.h"
 #include "clusters/identify.h"
 
+#include <app-common/zap-generated/attributes/Accessors.h>
+#include <app/persistence/AttributePersistenceProviderInstance.h>
+#include <app/persistence/DefaultAttributePersistenceProvider.h>
+#include <app/persistence/DeferredAttributePersistenceProvider.h>
+#include <app/server/Server.h>
 #include <setup_payload/OnboardingCodesUtil.h>
 
 #include <zephyr/logging/log.h>
@@ -22,140 +23,113 @@ LOG_MODULE_DECLARE(app, CONFIG_CHIP_APP_LOG_LEVEL);
 using namespace ::chip;
 using namespace ::chip::app;
 using namespace ::chip::DeviceLayer;
+using namespace ::chip::app::Clusters;
 
 namespace
 {
-constexpr uint32_t kDimmerTriggeredTimeout = 500;
-constexpr uint32_t kDimmerInterval = 300;
-constexpr EndpointId kLightSwitchEndpointId = 1;
 constexpr EndpointId kLightEndpointId = 1;
 
-k_timer sDimmerPressKeyTimer;
-k_timer sDimmerTimer;
+Nrf::Matter::IdentifyCluster sIdentifyCluster(kLightEndpointId, true, []() {
+	Nrf::PostTask([] { Nrf::GetBoard().GetLED(Nrf::DeviceLeds::LED2).Set(false); });
+});
 
-Nrf::Matter::IdentifyCluster sIdentifyCluster(kLightEndpointId);
+/* We will persist OnOff state across reboots if necessary, although physical sensing is better. */
+DefaultAttributePersistenceProvider gSimpleAttributePersistence;
 
-bool sWasDimmerTriggered = false;
-
-#define APPLICATION_BUTTON_MASK DK_BTN2_MSK
-
-#ifdef CONFIG_CHIP_ICD_UAT_SUPPORT
-#define UAT_BUTTON_MASK DK_BTN3_MSK
-#endif
 } /* namespace */
 
-void AppTask::DimmerTriggerEventHandler()
+void AppTask::SensePinChangedHandler(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
-	if (!sWasDimmerTriggered) {
-		LightSwitch::GetInstance().InitiateActionSwitch(LightSwitch::Action::Toggle);
-	}
-
-	Instance().CancelTimer(Timer::Dimmer);
-	Instance().CancelTimer(Timer::DimmerTrigger);
-	sWasDimmerTriggered = false;
+	/* This is an ISR context! We must post work to the Matter thread. */
+	SystemLayer().ScheduleLambda([] {
+		Instance().UpdateClusterState();
+	});
 }
 
-void AppTask::TimerEventHandler(const Timer &timerType)
+void AppTask::UpdateClusterState()
 {
-	switch (timerType) {
-	case Timer::DimmerTrigger:
-		LOG_INF("Dimming started...");
-		sWasDimmerTriggered = true;
-		LightSwitch::GetInstance().InitiateActionSwitch(LightSwitch::Action::On);
-		Instance().StartTimer(Timer::Dimmer, kDimmerInterval);
-		Instance().CancelTimer(Timer::DimmerTrigger);
-		break;
-	case Timer::Dimmer:
-		LightSwitch::GetInstance().DimmerChangeBrightness();
-		break;
-	default:
-		break;
+	// Read the actual physical state of the Bath Heater from the Sense Pin
+	bool isOn = (gpio_pin_get_dt(&mSensePin) == 1);
+
+	LOG_INF("Physical Sense Pin status: %s", isOn ? "ON" : "OFF");
+
+	// Synchronize Matter Data Model with physical state
+	Protocols::InteractionModel::Status status =
+		OnOff::Attributes::OnOff::Set(kLightEndpointId, isOn);
+
+	if (status != Protocols::InteractionModel::Status::Success) {
+		LOG_ERR("Updating on/off cluster failed: %x", to_underlying(status));
 	}
 }
 
-void AppTask::ButtonEventHandler(Nrf::ButtonState state, Nrf::ButtonMask hasChanged)
+void AppTask::InitiateAction(bool actionOn)
 {
-	if ((APPLICATION_BUTTON_MASK & state & hasChanged)) {
-		LOG_INF("Button has been pressed, keep in this state for at least 500 ms to change light sensitivity of bound lighting devices.");
-		Instance().StartTimer(Timer::DimmerTrigger, kDimmerTriggeredTimeout);
-	} else if ((APPLICATION_BUTTON_MASK & hasChanged)) {
-		Nrf::PostTask([] { DimmerTriggerEventHandler(); });
-#ifdef CONFIG_CHIP_ICD_UAT_SUPPORT
-	} else if ((UAT_BUTTON_MASK & state & hasChanged)) {
-		LOG_INF("ICD UserActiveMode has been triggered.");
-		Server::GetInstance().GetICDManager().OnNetworkActivity();
-#endif
-	}
-}
+	// Called by zcl_callbacks.cpp when Matter attribute turns ON/OFF via Home App
+	bool isCurrentlyOn = (gpio_pin_get_dt(&mSensePin) == 1);
 
-void AppTask::StartTimer(Timer timer, uint32_t timeoutMs)
-{
-	switch (timer) {
-	case Timer::DimmerTrigger:
-		k_timer_start(&sDimmerPressKeyTimer, K_MSEC(timeoutMs), K_NO_WAIT);
-		break;
-	case Timer::Dimmer:
-		k_timer_start(&sDimmerTimer, K_MSEC(timeoutMs), K_MSEC(timeoutMs));
-		break;
-	default:
-		break;
-	}
-}
+	LOG_INF("Remote Action requested: %s, Current Physical State: %s", 
+			actionOn ? "ON" : "OFF", isCurrentlyOn ? "ON" : "OFF");
 
-void AppTask::CancelTimer(Timer timer)
-{
-	switch (timer) {
-	case Timer::DimmerTrigger:
-		k_timer_stop(&sDimmerPressKeyTimer);
-		break;
-	case Timer::Dimmer:
-		k_timer_stop(&sDimmerTimer);
-		break;
-	default:
-		break;
-	}
-}
-
-void AppTask::UserTimerTimeoutCallback(k_timer *timer)
-{
-	if (!timer) {
-		return;
-	}
-	Timer timerType;
-
-	if (timer == &sDimmerPressKeyTimer) {
-		timerType = Timer::DimmerTrigger;
-	} else if (timer == &sDimmerTimer) {
-		timerType = Timer::Dimmer;
-	} else {
-		return;
+	if (actionOn == isCurrentlyOn) {
+		// Physical state already matches requested state!
+		LOG_INF("Physical state matches requested state. (Ignored physical block for testing)");
+		// return; // DONT RETURN, allow pulse so we can test toggling without sense pin
 	}
 
-	Nrf::PostTask([timerType]() { TimerEventHandler(timerType); });
+	// Pulse the control pin momentarily (like a relay button click)
+	LOG_INF("Pulsing Control Pin...");
+	gpio_pin_set_dt(&mCtrlPin, 1);
+	k_msleep(200);
+	gpio_pin_set_dt(&mCtrlPin, 0);
+
+	// The physical change will eventually toggle the SensePin which triggers SensePinChangedHandler.
+	// We can forcibly update state or let the GPIO interrupt handle it.
 }
 
 CHIP_ERROR AppTask::Init()
 {
 	/* Initialize Matter stack */
-	ReturnErrorOnFailure(Nrf::Matter::PrepareServer(Nrf::Matter::InitData{ .mPostServerInitClbk = [] {
-		LightSwitch::GetInstance().Init(kLightSwitchEndpointId);
+	ReturnErrorOnFailure(Nrf::Matter::PrepareServer(Nrf::Matter::InitData{ .mPostServerInitClbk = []() {
+		gSimpleAttributePersistence.Init(Nrf::Matter::GetPersistentStorageDelegate());
 		return CHIP_NO_ERROR;
 	} }));
-
-	/* Initialize application timers */
-	k_timer_init(&sDimmerPressKeyTimer, AppTask::UserTimerTimeoutCallback, nullptr);
-	k_timer_init(&sDimmerTimer, AppTask::UserTimerTimeoutCallback, nullptr);
 
 	if (!Nrf::GetBoard().Init(ButtonEventHandler)) {
 		LOG_ERR("User interface initialization failed.");
 		return CHIP_ERROR_INCORRECT_STATE;
 	}
 
-	/* Register Matter event handler that controls the connectivity status LED based on the captured Matter network
-	 * state. */
+	/* Register Matter event handler */
 	ReturnErrorOnFailure(Nrf::Matter::RegisterEventHandler(Nrf::Board::DefaultMatterEventHandler, 0));
-
 	ReturnErrorOnFailure(sIdentifyCluster.Init());
+
+	// Initialize our custom Hardware Pins (Control and Sense)
+	// Fallbacks if DT node alias is not correctly defined (though we did define them)
+	mCtrlPin = GPIO_DT_SPEC_GET(DT_NODELABEL(ctrl_pin_1), gpios);
+	mSensePin = GPIO_DT_SPEC_GET(DT_NODELABEL(sense_pin_1), gpios);
+
+	if (gpio_is_ready_dt(&mCtrlPin)) {
+		gpio_pin_configure_dt(&mCtrlPin, GPIO_OUTPUT_INACTIVE);
+		LOG_INF("Bath Heater Control Pin initialized.");
+	} else {
+		LOG_ERR("Bath Heater Control Pin NOT READY.");
+	}
+
+	if (gpio_is_ready_dt(&mSensePin)) {
+		gpio_pin_configure_dt(&mSensePin, GPIO_INPUT);
+		gpio_pin_interrupt_configure_dt(&mSensePin, GPIO_INT_EDGE_BOTH);
+		
+		gpio_init_callback(&mSenseCbData, SensePinChangedHandler, BIT(mSensePin.pin));
+		gpio_add_callback(mSensePin.port, &mSenseCbData);
+		LOG_INF("Bath Heater Sense Pin initialized and Interrupts attached.");
+	} else {
+		LOG_ERR("Bath Heater Sense Pin NOT READY.");
+	}
+
+	// Initial sync of the matter state at boot with physical state
+	SystemLayer().ScheduleLambda([this] {
+		UpdateClusterState();
+	});
 
 	return Nrf::Matter::StartServer();
 }
@@ -167,6 +141,18 @@ CHIP_ERROR AppTask::StartApp()
 	while (true) {
 		Nrf::DispatchNextTask();
 	}
-
 	return CHIP_NO_ERROR;
+}
+
+void AppTask::ButtonEventHandler(Nrf::ButtonState state, Nrf::ButtonMask hasChanged)
+{
+	// We could use physical buttons on the board to mock the remote app click if needed.
+	if ((DK_BTN2_MSK & hasChanged) & state) {
+		SystemLayer().ScheduleLambda([] {
+			// Get current Matter state and toggle it (simulating app behavior)
+			bool currentState = false;
+			OnOff::Attributes::OnOff::Get(kLightEndpointId, &currentState);
+			Instance().InitiateAction(!currentState);
+		});
+	}
 }

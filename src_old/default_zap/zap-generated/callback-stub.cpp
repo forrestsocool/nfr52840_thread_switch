@@ -37,6 +37,9 @@ void emberAfClusterInitCallback(EndpointId endpoint, ClusterId clusterId)
 	case app::Clusters::BasicInformation::Id:
 		emberAfBasicInformationClusterInitCallback(endpoint);
 		break;
+	case app::Clusters::Binding::Id:
+		emberAfBindingClusterInitCallback(endpoint);
+		break;
 	case app::Clusters::Descriptor::Id:
 		emberAfDescriptorClusterInitCallback(endpoint);
 		break;
@@ -54,6 +57,9 @@ void emberAfClusterInitCallback(EndpointId endpoint, ClusterId clusterId)
 		break;
 	case app::Clusters::Groups::Id:
 		emberAfGroupsClusterInitCallback(endpoint);
+		break;
+	case app::Clusters::IcdManagement::Id:
+		emberAfIcdManagementClusterInitCallback(endpoint);
 		break;
 	case app::Clusters::Identify::Id:
 		emberAfIdentifyClusterInitCallback(endpoint);
@@ -106,6 +112,11 @@ void __attribute__((weak)) emberAfBasicInformationClusterInitCallback(EndpointId
 	// To prevent warning
 	(void)endpoint;
 }
+void __attribute__((weak)) emberAfBindingClusterInitCallback(EndpointId endpoint)
+{
+	// To prevent warning
+	(void)endpoint;
+}
 void __attribute__((weak)) emberAfDescriptorClusterInitCallback(EndpointId endpoint)
 {
 	// To prevent warning
@@ -132,6 +143,11 @@ void __attribute__((weak)) emberAfGroupKeyManagementClusterInitCallback(Endpoint
 	(void)endpoint;
 }
 void __attribute__((weak)) emberAfGroupsClusterInitCallback(EndpointId endpoint)
+{
+	// To prevent warning
+	(void)endpoint;
+}
+void __attribute__((weak)) emberAfIcdManagementClusterInitCallback(EndpointId endpoint)
 {
 	// To prevent warning
 	(void)endpoint;

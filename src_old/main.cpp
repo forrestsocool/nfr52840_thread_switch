@@ -1,11 +1,12 @@
 /*
- * Copyright (c) 2021 Nordic Semiconductor ASA
+ * Copyright (c) 2022 Nordic Semiconductor ASA
  *
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
 #include "app_task.h"
 
+#include <cstdlib>
 #include <zephyr/logging/log.h>
 
 LOG_MODULE_REGISTER(app, CONFIG_CHIP_APP_LOG_LEVEL);

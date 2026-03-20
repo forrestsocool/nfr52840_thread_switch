@@ -1,6 +1,0 @@
-defines = -DNDEBUG
-framework_dirs =
-include_dirs = -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_thread_stl/public -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_thread_stl/test_thread_context_public_overrides -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_thread_stl/thread_public_overrides -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_thread/public
-target_output_name = test_thread_context
-
-

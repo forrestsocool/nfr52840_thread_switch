@@ -1,8 +1,0 @@
-defines = -DNDEBUG
-framework_dirs =
-include_dirs = -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_sync/public -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_preprocessor/public -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_polyfill/public -IC$:/ncs/v3.2.1/modules/lib/matter/third_party/pigweed/repo/pw_chrono/public
-target_output_name = timed_mutex.facade
-
-build phony/third_party/pigweed/repo/pw_sync/timed_mutex.facade.inputdeps: phony phony/third_party/pigweed/repo/pw_chrono/system_clock.NO_BACKEND_SET phony/third_party/pigweed/repo/pw_sync/mutex.NO_BACKEND_SET
-
-build phony/third_party/pigweed/repo/pw_sync/timed_mutex.facade: phony || phony/third_party/pigweed/repo/pw_sync/mutex phony/third_party/pigweed/repo/pw_chrono/system_clock
