@@ -9,8 +9,7 @@
 #include "board/board.h"
 #include <platform/CHIPDeviceLayer.h>
 #include <zephyr/drivers/gpio.h>
-
-struct k_timer;
+#include <zephyr/kernel.h>
 struct Identify;
 
 class AppTask {
@@ -32,11 +31,10 @@ private:
 
 	// Handlers
 	static void ButtonEventHandler(Nrf::ButtonState state, Nrf::ButtonMask hasChanged);
-	static void SensePinChangedHandler(const struct device *dev, struct gpio_callback *cb, uint32_t pins);
+	static void ControlPulseHandler(struct k_work *work);
 	static void PostEventTask(void *event);
 
 	// Zephyr GPIO configurations for Bath Heater
 	struct gpio_dt_spec mCtrlPin;
-	struct gpio_dt_spec mSensePin;
-	struct gpio_callback mSenseCbData;
+	struct k_work_delayable mPulseWork;
 };

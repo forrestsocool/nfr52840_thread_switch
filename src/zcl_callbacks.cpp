@@ -42,8 +42,7 @@ void emberAfOnOffClusterInitCallback(EndpointId endpoint)
 	/* Read storedValue on/off value */
 	status = Attributes::OnOff::Get(endpoint, &storedValue);
 
-	// The AppTask::Init() has already called UpdateClusterState() to sync 
-	// the digital model with the physical Sense Pin. So we do nothing here to override it.
+	// AppTask::Init() used to sync with Sense Pin, but it's now removed for blind control.
 }
 
 namespace chip {

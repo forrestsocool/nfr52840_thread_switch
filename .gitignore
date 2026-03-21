@@ -1,0 +1,24 @@
+# Zephyr / nRF Connect SDK
+build/
+.cache/
+.vscode/
+zephyr/
+modules/
+nrf/
+tools/
+
+# Generated ZAP files
+src/default_zap/zap-generated/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Misc
+*.zip
+*.hex
+*.bin
+*.uf2
+*.elf
+*.map
