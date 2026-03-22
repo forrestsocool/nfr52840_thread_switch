@@ -41,7 +41,8 @@ private:
 	struct gpio_callback mSensePinCbData;
 	struct k_work_delayable mPulseWork;
 	struct k_work_delayable mSenseWork;
+	uint16_t mSenseHistory;
 
 	static void SensePinHandler(const struct device *port, struct gpio_callback *cb, uint32_t pins);
-	static void SensingDebounceHandler(struct k_work *work);
+	static void SensingPollHandler(struct k_work *work);
 };

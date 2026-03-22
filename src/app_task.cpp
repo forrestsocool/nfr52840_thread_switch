@@ -40,38 +40,58 @@ DefaultAttributePersistenceProvider gSimpleAttributePersistence;
 
 void AppTask::UpdateClusterState()
 {
-	if (!gpio_is_ready_dt(&mSensePin)) {
+	/* Handled by polling logic in SensingPollHandler */
+}
+
+void AppTask::SensingPollHandler(struct k_work *work)
+{
+	AppTask &task = Instance();
+
+	if (!gpio_is_ready_dt(&task.mSensePin)) {
 		return;
 	}
 
-	/* Logic: 3.3V (HIGH) -> OFF, 0V (LOW) -> ON */
-	bool isOn = (gpio_pin_get_dt(&mSensePin) == 0);
+	/* Read physical pin: 1 for 2.9V/HIGH, 0 for 0V/LOW */
+	uint8_t rawValue = gpio_pin_get_dt(&task.mSensePin) & 1;
 
-	LOG_INF("Sensing Feedback: Pin is %s -> Status: %s", isOn ? "LOW" : "HIGH", isOn ? "ON" : "OFF");
+	/* Update history (last 10 samples) */
+	task.mSenseHistory = (task.mSenseHistory << 1) | rawValue;
 
-	SystemLayer().ScheduleLambda([isOn] {
-		// Update the attribute on the Matter thread
+	/* Voting logic: Count how many LOW (0) samples we have in the last 10 */
+	int lowCount = 0;
+	for (int i = 0; i < 10; i++) {
+		if (!((task.mSenseHistory >> i) & 1)) {
+			lowCount++;
+		}
+	}
+
+	/* Majority Vote: Only if 8/10 are LOW do we say ON. Else OFF. */
+	bool votedIsOn = (lowCount >= 8);
+
+	/* Log every few seconds or only on change to avoid log flooding */
+	static uint32_t logCounter = 0;
+	if (++logCounter % 50 == 0) { // Every 5 seconds
+		LOG_INF("Sensing Poll: LowCount=%d/10 -> Voted Status: %s", lowCount, votedIsOn ? "ON" : "OFF");
+	}
+
+	/* Update Matter state if voted status changed */
+	SystemLayer().ScheduleLambda([votedIsOn] {
 		bool currentState = false;
 		OnOff::Attributes::OnOff::Get(kLightEndpointId, &currentState);
 
-		if (currentState != isOn) {
-			OnOff::Attributes::OnOff::Set(kLightEndpointId, isOn);
-			LOG_INF("Matter OnOff attribute updated to: %s", isOn ? "ON" : "OFF");
+		if (currentState != votedIsOn) {
+			OnOff::Attributes::OnOff::Set(kLightEndpointId, votedIsOn);
+			LOG_INF("Matter OnOff attribute synced to VOTED status: %s (LowCount >= 8)", votedIsOn ? "ON" : "OFF");
 		}
 	});
+
+	/* Schedule next poll in 100ms */
+	k_work_reschedule(&task.mSenseWork, K_MSEC(100));
 }
 
 void AppTask::SensePinHandler(const struct device *port, struct gpio_callback *cb, uint32_t pins)
 {
-	/* Reschedule debounce work (50ms). Any new jitter within this window will reset the timer. */
-	AppTask &task = Instance();
-	k_work_reschedule(&task.mSenseWork, K_MSEC(50));
-}
-
-void AppTask::SensingDebounceHandler(struct k_work *work)
-{
-	/* This is called after the pin has been stable for 50ms */
-	Instance().UpdateClusterState();
+	/* Interrupts disabled in favor of polling */
 }
 
 void AppTask::ControlPulseHandler(struct k_work *work)
@@ -118,6 +138,7 @@ CHIP_ERROR AppTask::Init()
 	mCtrlPinOn = GPIO_DT_SPEC_GET(DT_NODELABEL(ctrl_pin_1), gpios);
 	mCtrlPinOff = GPIO_DT_SPEC_GET(DT_NODELABEL(ctrl_pin_2), gpios);
 	mSensePin = GPIO_DT_SPEC_GET(DT_NODELABEL(sense_pin_1), gpios);
+	mSenseHistory = 0xFFFF; // Initial state: all HIGH (OFF)
 
 	if (gpio_is_ready_dt(&mCtrlPinOn) && gpio_is_ready_dt(&mCtrlPinOff)) {
 		/* Start in Hi-Z (INPUT) mode as requested */
@@ -130,21 +151,18 @@ CHIP_ERROR AppTask::Init()
 
 	if (gpio_is_ready_dt(&mSensePin)) {
 		gpio_pin_configure_dt(&mSensePin, GPIO_INPUT);
-		gpio_init_callback(&mSensePinCbData, SensePinHandler, BIT(mSensePin.pin));
-		gpio_add_callback(mSensePin.port, &mSensePinCbData);
-		gpio_pin_interrupt_configure_dt(&mSensePin, GPIO_INT_EDGE_BOTH);
-
-		LOG_INF("Sensing Feedback Pin (GPIO %d) initialized.", mSensePin.pin);
-
-		/* Initial sync */
-		UpdateClusterState();
+		/* No interrupts: Voting Polling instead */
+		LOG_INF("Sensing Feedback Polling (GPIO %d) initialized (100ms 8/10 vote).", mSensePin.pin);
 	} else {
 		LOG_ERR("Sensing Feedback Pin NOT READY.");
 	}
 
 	/* Initialize Pulse and Sense Work */
 	k_work_init_delayable(&mPulseWork, ControlPulseHandler);
-	k_work_init_delayable(&mSenseWork, SensingDebounceHandler);
+	k_work_init_delayable(&mSenseWork, SensingPollHandler);
+
+	/* Start the polling loop immediately */
+	k_work_schedule(&mSenseWork, K_NO_WAIT);
 
 	return Nrf::Matter::StartServer();
 }
