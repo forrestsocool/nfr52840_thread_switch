@@ -40,8 +40,38 @@ DefaultAttributePersistenceProvider gSimpleAttributePersistence;
 
 void AppTask::UpdateClusterState()
 {
-	/* No physical feedback pin. Status is blind-synced by incoming commands. */
-	LOG_INF("Blind control mode: Status feedback disabled.");
+	if (!gpio_is_ready_dt(&mSensePin)) {
+		return;
+	}
+
+	/* Logic: 3.3V (HIGH) -> OFF, 0V (LOW) -> ON */
+	bool isOn = (gpio_pin_get_dt(&mSensePin) == 0);
+
+	LOG_INF("Sensing Feedback: Pin is %s -> Status: %s", isOn ? "LOW" : "HIGH", isOn ? "ON" : "OFF");
+
+	SystemLayer().ScheduleLambda([isOn] {
+		// Update the attribute on the Matter thread
+		bool currentState = false;
+		OnOff::Attributes::OnOff::Get(kLightEndpointId, &currentState);
+
+		if (currentState != isOn) {
+			OnOff::Attributes::OnOff::Set(kLightEndpointId, isOn);
+			LOG_INF("Matter OnOff attribute updated to: %s", isOn ? "ON" : "OFF");
+		}
+	});
+}
+
+void AppTask::SensePinHandler(const struct device *port, struct gpio_callback *cb, uint32_t pins)
+{
+	/* Reschedule debounce work (50ms). Any new jitter within this window will reset the timer. */
+	AppTask &task = Instance();
+	k_work_reschedule(&task.mSenseWork, K_MSEC(50));
+}
+
+void AppTask::SensingDebounceHandler(struct k_work *work)
+{
+	/* This is called after the pin has been stable for 50ms */
+	Instance().UpdateClusterState();
 }
 
 void AppTask::ControlPulseHandler(struct k_work *work)
@@ -84,9 +114,10 @@ CHIP_ERROR AppTask::Init()
 	ReturnErrorOnFailure(Nrf::Matter::RegisterEventHandler(Nrf::Board::DefaultMatterEventHandler, 0));
 	ReturnErrorOnFailure(sIdentifyCluster.Init());
 
-	// Initialize our custom Hardware Pins (Control only)
+	// Initialize our custom Hardware Pins (Control and Sense)
 	mCtrlPinOn = GPIO_DT_SPEC_GET(DT_NODELABEL(ctrl_pin_1), gpios);
 	mCtrlPinOff = GPIO_DT_SPEC_GET(DT_NODELABEL(ctrl_pin_2), gpios);
+	mSensePin = GPIO_DT_SPEC_GET(DT_NODELABEL(sense_pin_1), gpios);
 
 	if (gpio_is_ready_dt(&mCtrlPinOn) && gpio_is_ready_dt(&mCtrlPinOff)) {
 		/* Start in Hi-Z (INPUT) mode as requested */
@@ -97,8 +128,23 @@ CHIP_ERROR AppTask::Init()
 		LOG_ERR("Bath Heater Control Pins NOT READY.");
 	}
 
-	/* Initialize Pulse Work */
+	if (gpio_is_ready_dt(&mSensePin)) {
+		gpio_pin_configure_dt(&mSensePin, GPIO_INPUT);
+		gpio_init_callback(&mSensePinCbData, SensePinHandler, BIT(mSensePin.pin));
+		gpio_add_callback(mSensePin.port, &mSensePinCbData);
+		gpio_pin_interrupt_configure_dt(&mSensePin, GPIO_INT_EDGE_BOTH);
+
+		LOG_INF("Sensing Feedback Pin (GPIO %d) initialized.", mSensePin.pin);
+
+		/* Initial sync */
+		UpdateClusterState();
+	} else {
+		LOG_ERR("Sensing Feedback Pin NOT READY.");
+	}
+
+	/* Initialize Pulse and Sense Work */
 	k_work_init_delayable(&mPulseWork, ControlPulseHandler);
+	k_work_init_delayable(&mSenseWork, SensingDebounceHandler);
 
 	return Nrf::Matter::StartServer();
 }

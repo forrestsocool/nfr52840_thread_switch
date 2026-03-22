@@ -37,5 +37,11 @@ private:
 	// Zephyr GPIO configurations for Bath Heater
 	struct gpio_dt_spec mCtrlPinOn;
 	struct gpio_dt_spec mCtrlPinOff;
+	struct gpio_dt_spec mSensePin;
+	struct gpio_callback mSensePinCbData;
 	struct k_work_delayable mPulseWork;
+	struct k_work_delayable mSenseWork;
+
+	static void SensePinHandler(const struct device *port, struct gpio_callback *cb, uint32_t pins);
+	static void SensingDebounceHandler(struct k_work *work);
 };
