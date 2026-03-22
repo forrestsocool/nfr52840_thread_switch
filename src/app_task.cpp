@@ -94,11 +94,36 @@ void AppTask::SensePinHandler(const struct device *port, struct gpio_callback *c
 void AppTask::ControlPulseHandler(struct k_work *work)
 {
 	AppTask &task = Instance();
-	/* Restore both to INPUT (Hi-Z) after pulse */
+	/* Restore control pin to INPUT (Hi-Z) after pulse */
 	gpio_pin_configure_dt(&task.mCtrlPinOn, GPIO_INPUT);
-	gpio_pin_configure_dt(&task.mCtrlPinOff, GPIO_INPUT);
+	LOG_INF("Control Pulse finished, ctrl pin restored to Hi-Z.");
+
+	if (task.mPendingOff) {
+		/* For OFF action: schedule standby pulse 1 second later */
+		LOG_INF("OFF action: scheduling standby pulse in 1 second...");
+		k_work_reschedule(&task.mStandbyWork, K_MSEC(1000));
+	} else {
+		task.mIsPulsing = false;
+	}
+}
+
+void AppTask::StandbyPulseHandler(struct k_work *work)
+{
+	AppTask &task = Instance();
+	/* Pull standby pin LOW for 300ms */
+	gpio_pin_configure_dt(&task.mStandbyPin, GPIO_OUTPUT_LOW);
+	LOG_INF("Standby Pin pulled LOW (pulse start)");
+	k_work_reschedule(&task.mStandbyReleaseWork, K_MSEC(300));
+}
+
+void AppTask::StandbyReleaseHandler(struct k_work *work)
+{
+	AppTask &task = Instance();
+	/* Restore standby pin to INPUT (Hi-Z) */
+	gpio_pin_configure_dt(&task.mStandbyPin, GPIO_INPUT);
 	task.mIsPulsing = false;
-	LOG_INF("Control Pulse finished, pins restored to Hi-Z.");
+	task.mPendingOff = false;
+	LOG_INF("Standby Pulse finished, pin restored to Hi-Z. OFF sequence complete.");
 }
 
 void AppTask::InitiateAction(bool actionOn)
@@ -106,16 +131,15 @@ void AppTask::InitiateAction(bool actionOn)
 	LOG_INF("Remote Action requested: %s (Blind Pulse)", actionOn ? "ON" : "OFF");
 
 	mIsPulsing = true;
+	mPendingOff = !actionOn;
 	/* Warm up sensing history to the target state to avoid the 1-second lag-revert.
 	 * If target is ON, set history to all 0s (LOW). If OFF, set to all 1s (HIGH). */
 	mSenseHistory = actionOn ? 0x0000 : 0xFFFF;
 	mVotedIsOn = actionOn;
 
-	struct gpio_dt_spec *targetPin = actionOn ? &mCtrlPinOn : &mCtrlPinOff;
-
-	/* Trigger: Switch to OUTPUT and pull LOW */
-	gpio_pin_configure_dt(targetPin, GPIO_OUTPUT_LOW);
-	LOG_INF("Control Pin (%s) pulled LOW (Pulse start)", actionOn ? "ON" : "OFF");
+	/* Both ON and OFF use the same control pin (gpio0.17) */
+	gpio_pin_configure_dt(&mCtrlPinOn, GPIO_OUTPUT_LOW);
+	LOG_INF("Control Pin (gpio0.17) pulled LOW for %s (Pulse start)", actionOn ? "ON" : "OFF");
 
 	/* Schedule release after 300ms */
 	k_work_reschedule(&mPulseWork, K_MSEC(300));
@@ -140,20 +164,21 @@ CHIP_ERROR AppTask::Init()
 
 	// Initialize our custom Hardware Pins (Control and Sense)
 	mCtrlPinOn = GPIO_DT_SPEC_GET(DT_NODELABEL(ctrl_pin_1), gpios);
-	mCtrlPinOff = GPIO_DT_SPEC_GET(DT_NODELABEL(ctrl_pin_2), gpios);
+	mStandbyPin = GPIO_DT_SPEC_GET(DT_NODELABEL(ctrl_pin_2), gpios);
 	mSensePin = GPIO_DT_SPEC_GET(DT_NODELABEL(sense_pin_1), gpios);
 	
 	mSenseHistory = 0xFFFF; // Initial state: all HIGH (OFF)
 	mVotedIsOn = false;
 	mIsPulsing = false;
+	mPendingOff = false;
 
-	if (gpio_is_ready_dt(&mCtrlPinOn) && gpio_is_ready_dt(&mCtrlPinOff)) {
+	if (gpio_is_ready_dt(&mCtrlPinOn) && gpio_is_ready_dt(&mStandbyPin)) {
 		/* Start in Hi-Z (INPUT) mode as requested */
 		gpio_pin_configure_dt(&mCtrlPinOn, GPIO_INPUT);
-		gpio_pin_configure_dt(&mCtrlPinOff, GPIO_INPUT);
-		LOG_INF("Bath Heater Control Pins initialized in Hi-Z.");
+		gpio_pin_configure_dt(&mStandbyPin, GPIO_INPUT);
+		LOG_INF("Control Pin (gpio0.17) and Standby Pin (gpio0.31) initialized in Hi-Z.");
 	} else {
-		LOG_ERR("Bath Heater Control Pins NOT READY.");
+		LOG_ERR("Control/Standby Pins NOT READY.");
 	}
 
 	if (gpio_is_ready_dt(&mSensePin)) {
@@ -164,8 +189,10 @@ CHIP_ERROR AppTask::Init()
 		LOG_ERR("Sensing Feedback Pin NOT READY.");
 	}
 
-	/* Initialize Pulse and Sense Work */
+	/* Initialize Pulse, Standby, and Sense Work */
 	k_work_init_delayable(&mPulseWork, ControlPulseHandler);
+	k_work_init_delayable(&mStandbyWork, StandbyPulseHandler);
+	k_work_init_delayable(&mStandbyReleaseWork, StandbyReleaseHandler);
 	k_work_init_delayable(&mSenseWork, SensingPollHandler);
 
 	/* Start the polling loop immediately */

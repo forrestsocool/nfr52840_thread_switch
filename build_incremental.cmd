@@ -5,3 +5,4 @@ set ZEPHYR_TOOLCHAIN_VARIANT=zephyr
 set ZEPHYR_SDK_INSTALL_DIR=C:\ncs\toolchains\66cdf9b75e\opt\zephyr-sdk
 set ZEPHYR_BASE=C:\ncs\v3.2.1\zephyr
 west build
+python uf2conv.py -f 0xada52840 -c -o build/zephyr/zephyr.uf2 build/zephyr/zephyr.hex

@@ -50,7 +50,7 @@
 		};
 		ctrl_pin_2: ctrl_pin_2 {
 			gpios = <&gpio0 31 GPIO_ACTIVE_HIGH>;
-			label = "Bath Heater Control Pin OFF";
+			label = "Bath Heater Standby Pin (pulsed 1s after OFF)";
 		};
 	};
 
