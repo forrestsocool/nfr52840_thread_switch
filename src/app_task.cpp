@@ -67,23 +67,20 @@ void AppTask::SensingPollHandler(struct k_work *work)
 
 	/* Majority Vote: Only if 8/10 are LOW do we say ON. Else OFF. */
 	bool votedIsOn = (lowCount >= 8);
+	task.mVotedIsOn = votedIsOn;
 
-	/* Log every few seconds or only on change to avoid log flooding */
-	static uint32_t logCounter = 0;
-	if (++logCounter % 50 == 0) { // Every 5 seconds
-		LOG_INF("Sensing Poll: LowCount=%d/10 -> Voted Status: %s", lowCount, votedIsOn ? "ON" : "OFF");
+	/* Update Matter state if voted status changed AND not currently pulsing */
+	if (!task.mIsPulsing) {
+		SystemLayer().ScheduleLambda([votedIsOn] {
+			bool currentState = false;
+			OnOff::Attributes::OnOff::Get(kLightEndpointId, &currentState);
+
+			if (currentState != votedIsOn) {
+				OnOff::Attributes::OnOff::Set(kLightEndpointId, votedIsOn);
+				LOG_INF("Matter OnOff attribute synced to VOTED status: %s (LowCount >= 8)", votedIsOn ? "ON" : "OFF");
+			}
+		});
 	}
-
-	/* Update Matter state if voted status changed */
-	SystemLayer().ScheduleLambda([votedIsOn] {
-		bool currentState = false;
-		OnOff::Attributes::OnOff::Get(kLightEndpointId, &currentState);
-
-		if (currentState != votedIsOn) {
-			OnOff::Attributes::OnOff::Set(kLightEndpointId, votedIsOn);
-			LOG_INF("Matter OnOff attribute synced to VOTED status: %s (LowCount >= 8)", votedIsOn ? "ON" : "OFF");
-		}
-	});
 
 	/* Schedule next poll in 100ms */
 	k_work_reschedule(&task.mSenseWork, K_MSEC(100));
@@ -100,12 +97,19 @@ void AppTask::ControlPulseHandler(struct k_work *work)
 	/* Restore both to INPUT (Hi-Z) after pulse */
 	gpio_pin_configure_dt(&task.mCtrlPinOn, GPIO_INPUT);
 	gpio_pin_configure_dt(&task.mCtrlPinOff, GPIO_INPUT);
+	task.mIsPulsing = false;
 	LOG_INF("Control Pulse finished, pins restored to Hi-Z.");
 }
 
 void AppTask::InitiateAction(bool actionOn)
 {
 	LOG_INF("Remote Action requested: %s (Blind Pulse)", actionOn ? "ON" : "OFF");
+
+	mIsPulsing = true;
+	/* Warm up sensing history to the target state to avoid the 1-second lag-revert.
+	 * If target is ON, set history to all 0s (LOW). If OFF, set to all 1s (HIGH). */
+	mSenseHistory = actionOn ? 0x0000 : 0xFFFF;
+	mVotedIsOn = actionOn;
 
 	struct gpio_dt_spec *targetPin = actionOn ? &mCtrlPinOn : &mCtrlPinOff;
 
@@ -138,7 +142,10 @@ CHIP_ERROR AppTask::Init()
 	mCtrlPinOn = GPIO_DT_SPEC_GET(DT_NODELABEL(ctrl_pin_1), gpios);
 	mCtrlPinOff = GPIO_DT_SPEC_GET(DT_NODELABEL(ctrl_pin_2), gpios);
 	mSensePin = GPIO_DT_SPEC_GET(DT_NODELABEL(sense_pin_1), gpios);
+	
 	mSenseHistory = 0xFFFF; // Initial state: all HIGH (OFF)
+	mVotedIsOn = false;
+	mIsPulsing = false;
 
 	if (gpio_is_ready_dt(&mCtrlPinOn) && gpio_is_ready_dt(&mCtrlPinOff)) {
 		/* Start in Hi-Z (INPUT) mode as requested */

@@ -25,8 +25,17 @@ void MatterPostAttributeChangeCallback(const chip::app::ConcreteAttributePath &a
 
 	if (clusterId == OnOff::Id && attributeId == OnOff::Attributes::OnOff::Id) {
 		ChipLogProgress(Zcl, "Cluster OnOff: attribute OnOff set to %" PRIu8 "", *value);
-		// Call our custom logic which pulses the pin if the physical state doesn't match
-		AppTask::Instance().InitiateAction(*value);
+		
+		bool targetState = (*value != 0);
+		bool sensedState = AppTask::Instance().GetVotedIsOn();
+
+		// Feedback Loop Prevention:
+		// Only trigger physical pulse if the target state differs from what we already sense.
+		if (targetState != sensedState) {
+			AppTask::Instance().InitiateAction(targetState);
+		} else {
+			ChipLogProgress(Zcl, "OnOff state already matches physical sense (%s). Skipping redundant pulse.", targetState ? "ON" : "OFF");
+		}
 	}
 }
 

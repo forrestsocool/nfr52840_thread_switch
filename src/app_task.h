@@ -25,6 +25,7 @@ public:
 
 	// Called from ZCL callback when remote command (Home App) changes the OnOff attribute
 	void InitiateAction(bool actionOn);
+	bool GetVotedIsOn() { return mVotedIsOn; }
 
 private:
 	CHIP_ERROR Init();
@@ -42,6 +43,8 @@ private:
 	struct k_work_delayable mPulseWork;
 	struct k_work_delayable mSenseWork;
 	uint16_t mSenseHistory;
+	bool mVotedIsOn;
+	bool mIsPulsing;
 
 	static void SensePinHandler(const struct device *port, struct gpio_callback *cb, uint32_t pins);
 	static void SensingPollHandler(struct k_work *work);
