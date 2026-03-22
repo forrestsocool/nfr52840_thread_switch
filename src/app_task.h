@@ -35,6 +35,7 @@ private:
 	static void PostEventTask(void *event);
 
 	// Zephyr GPIO configurations for Bath Heater
-	struct gpio_dt_spec mCtrlPin;
+	struct gpio_dt_spec mCtrlPinOn;
+	struct gpio_dt_spec mCtrlPinOff;
 	struct k_work_delayable mPulseWork;
 };

@@ -47,18 +47,21 @@ void AppTask::UpdateClusterState()
 void AppTask::ControlPulseHandler(struct k_work *work)
 {
 	AppTask &task = Instance();
-	/* Restore to INPUT (Hi-Z) after pulse */
-	gpio_pin_configure_dt(&task.mCtrlPin, GPIO_INPUT);
-	LOG_INF("Control Pulse finished, pin restored to Hi-Z.");
+	/* Restore both to INPUT (Hi-Z) after pulse */
+	gpio_pin_configure_dt(&task.mCtrlPinOn, GPIO_INPUT);
+	gpio_pin_configure_dt(&task.mCtrlPinOff, GPIO_INPUT);
+	LOG_INF("Control Pulse finished, pins restored to Hi-Z.");
 }
 
 void AppTask::InitiateAction(bool actionOn)
 {
 	LOG_INF("Remote Action requested: %s (Blind Pulse)", actionOn ? "ON" : "OFF");
 
+	struct gpio_dt_spec *targetPin = actionOn ? &mCtrlPinOn : &mCtrlPinOff;
+
 	/* Trigger: Switch to OUTPUT and pull LOW */
-	gpio_pin_configure_dt(&mCtrlPin, GPIO_OUTPUT_LOW);
-	LOG_INF("Control Pin pulled LOW (Pulse start)");
+	gpio_pin_configure_dt(targetPin, GPIO_OUTPUT_LOW);
+	LOG_INF("Control Pin (%s) pulled LOW (Pulse start)", actionOn ? "ON" : "OFF");
 
 	/* Schedule release after 300ms */
 	k_work_reschedule(&mPulseWork, K_MSEC(300));
@@ -82,14 +85,16 @@ CHIP_ERROR AppTask::Init()
 	ReturnErrorOnFailure(sIdentifyCluster.Init());
 
 	// Initialize our custom Hardware Pins (Control only)
-	mCtrlPin = GPIO_DT_SPEC_GET(DT_NODELABEL(ctrl_pin_1), gpios);
+	mCtrlPinOn = GPIO_DT_SPEC_GET(DT_NODELABEL(ctrl_pin_1), gpios);
+	mCtrlPinOff = GPIO_DT_SPEC_GET(DT_NODELABEL(ctrl_pin_2), gpios);
 
-	if (gpio_is_ready_dt(&mCtrlPin)) {
+	if (gpio_is_ready_dt(&mCtrlPinOn) && gpio_is_ready_dt(&mCtrlPinOff)) {
 		/* Start in Hi-Z (INPUT) mode as requested */
-		gpio_pin_configure_dt(&mCtrlPin, GPIO_INPUT);
-		LOG_INF("Bath Heater Control Pin initialized in Hi-Z.");
+		gpio_pin_configure_dt(&mCtrlPinOn, GPIO_INPUT);
+		gpio_pin_configure_dt(&mCtrlPinOff, GPIO_INPUT);
+		LOG_INF("Bath Heater Control Pins initialized in Hi-Z.");
 	} else {
-		LOG_ERR("Bath Heater Control Pin NOT READY.");
+		LOG_ERR("Bath Heater Control Pins NOT READY.");
 	}
 
 	/* Initialize Pulse Work */

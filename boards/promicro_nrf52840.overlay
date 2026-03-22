@@ -23,6 +23,7 @@
 		led3 = &led_3;
 		sense1 = &sense_pin_1;
 		ctrl1  = &ctrl_pin_1;
+		ctrl2  = &ctrl_pin_2;
 	};
 
 	leds {
@@ -45,7 +46,11 @@
 		};
 		ctrl_pin_1: ctrl_pin_1 {
 			gpios = <&gpio0 17 GPIO_ACTIVE_HIGH>;
-			label = "Bath Heater Control Pin 1";
+			label = "Bath Heater Control Pin ON";
+		};
+		ctrl_pin_2: ctrl_pin_2 {
+			gpios = <&gpio0 31 GPIO_ACTIVE_HIGH>;
+			label = "Bath Heater Control Pin OFF";
 		};
 	};
 
