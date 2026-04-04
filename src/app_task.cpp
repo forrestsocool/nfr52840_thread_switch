@@ -16,6 +16,8 @@
 #include <app/server/Server.h>
 #include <setup_payload/OnboardingCodesUtil.h>
 
+#include <hal/nrf_saadc.h>
+
 #include <zephyr/logging/log.h>
 
 LOG_MODULE_DECLARE(app, CONFIG_CHIP_APP_LOG_LEVEL);
@@ -47,99 +49,155 @@ void AppTask::SensingPollHandler(struct k_work *work)
 {
 	AppTask &task = Instance();
 
-	if (!gpio_is_ready_dt(&task.mSensePin)) {
+	if (!device_is_ready(task.mAdcDev)) {
+		LOG_ERR("ADC device not ready in poll handler!");
+		k_work_reschedule(&task.mSenseWork, K_MSEC(500));
 		return;
 	}
 
-	/* Read physical pin: 1 for 2.9V/HIGH, 0 for 0V/LOW */
-	uint8_t rawValue = gpio_pin_get_dt(&task.mSensePin) & 1;
+	/* ADC read: 12-bit, gain 1/6, internal 0.6V ref → 3.6V range
+	 * 8x hardware oversampling to reduce noise */
+	struct adc_sequence sequence = {
+		.channels = BIT(kAdcChannelId),
+		.buffer = &task.mAdcBuffer,
+		.buffer_size = sizeof(task.mAdcBuffer),
+		.resolution = 12,
+		.oversampling = 3,  /* 2^3 = 8x hardware oversampling */
+		.calibrate = !task.mAdcCalibrated,
+	};
 
-	/* Update history (last 10 samples) */
-	task.mSenseHistory = (task.mSenseHistory << 1) | rawValue;
+	int err = adc_read(task.mAdcDev, &sequence);
+	if (err) {
+		LOG_ERR("ADC read failed: %d", err);
+		k_work_reschedule(&task.mSenseWork, K_MSEC(100));
+		return;
+	}
 
-	/* Voting logic: Count how many LOW (0) samples we have in the last 10 */
-	int lowCount = 0;
-	for (int i = 0; i < 10; i++) {
-		if (!((task.mSenseHistory >> i) & 1)) {
-			lowCount++;
+	int16_t adcVal = task.mAdcBuffer;
+	task.mAdcCalibrated = true;
+	task.mPollCount++;
+
+	/* Reject clearly invalid values (SAADC errata #89: incorrect sign) */
+	if (adcVal < 0 || adcVal > 4095) {
+		task.mInvalidCount++;
+		if ((task.mInvalidCount % 50) == 1) {
+			LOG_WRN("ADC INVALID: val=%d count=%u", adcVal, task.mInvalidCount);
+		}
+		k_work_reschedule(&task.mSenseWork, K_MSEC(100));
+		return;
+	}
+
+	/* EMA smoothing: alpha=0.25 */
+	if (!task.mEmaInitialized) {
+		task.mEmaValue = adcVal;
+		task.mEmaInitialized = true;
+	} else {
+		task.mEmaValue = (task.mEmaValue * 3 + adcVal) / 4;
+	}
+
+	/* Warmup: let EMA stabilize (first 10 samples = 1 second) */
+	if (task.mWarmupCount < 10) {
+		task.mWarmupCount++;
+		int mv = (adcVal * 3600) / 4096;
+		int emv = (task.mEmaValue * 3600) / 4096;
+		LOG_INF("Warmup[%u]: adc=%d (%dmV) ema=%d (%dmV)",
+			task.mWarmupCount, adcVal, mv, task.mEmaValue, emv);
+
+		if (task.mWarmupCount == 10) {
+			task.mVotedIsOn = (task.mEmaValue <= kThresholdEnterOn);
+			LOG_INF("*** Warmup complete: ema=%d -> initial state=%s",
+				task.mEmaValue, task.mVotedIsOn ? "ON" : "OFF");
+
+			Nrf::PostTask([isOn = task.mVotedIsOn] {
+				Nrf::GetBoard().GetLED(Nrf::DeviceLeds::LED2).Set(isOn);
+			});
+
+			bool isOn = task.mVotedIsOn;
+			SystemLayer().ScheduleLambda([isOn] {
+				OnOff::Attributes::OnOff::Set(kLightEndpointId, isOn);
+				LOG_INF("Matter OnOff initialized: %s", isOn ? "ON" : "OFF");
+			});
+		}
+		k_work_reschedule(&task.mSenseWork, K_MSEC(100));
+		return;
+	}
+
+	/* Hysteresis Detection:
+	 *   ON  ≈ 2.48V → ADC ≈ 2821
+	 *   OFF ≈ 3.20V → ADC ≈ 3641
+	 *   Midpoint ≈ 3231
+	 *
+	 * Currently OFF → ON  when EMA <= 3100 (~2.72V)
+	 * Currently ON  → OFF when EMA >  3400 (~2.99V)
+	 * Dead band 3100–3400 */
+	bool prevState = task.mVotedIsOn;
+
+	if (task.mVotedIsOn) {
+		if (task.mEmaValue > kThresholdExitOn) {
+			task.mVotedIsOn = false;
+		}
+	} else {
+		if (task.mEmaValue <= kThresholdEnterOn) {
+			task.mVotedIsOn = true;
 		}
 	}
 
-	/* Majority Vote: Only if 8/10 are LOW do we say ON. Else OFF. */
-	bool votedIsOn = (lowCount >= 8);
-	task.mVotedIsOn = votedIsOn;
+	if (prevState != task.mVotedIsOn) {
+		int emv = (task.mEmaValue * 3600) / 4096;
+		LOG_INF("*** STATE CHANGE: %s -> %s (ema=%d =%dmV adc=%d)",
+			prevState ? "ON" : "OFF", task.mVotedIsOn ? "ON" : "OFF",
+			task.mEmaValue, emv, adcVal);
 
-	/* Update Matter state if voted status changed AND not currently pulsing */
-	if (!task.mIsPulsing) {
-		SystemLayer().ScheduleLambda([votedIsOn] {
-			bool currentState = false;
-			OnOff::Attributes::OnOff::Get(kLightEndpointId, &currentState);
-
-			if (currentState != votedIsOn) {
-				OnOff::Attributes::OnOff::Set(kLightEndpointId, votedIsOn);
-				LOG_INF("Matter OnOff attribute synced to VOTED status: %s (LowCount >= 8)", votedIsOn ? "ON" : "OFF");
-			}
+		Nrf::PostTask([isOn = task.mVotedIsOn] {
+			Nrf::GetBoard().GetLED(Nrf::DeviceLeds::LED2).Set(isOn);
 		});
+
+		if (!task.mIsPulsing) {
+			bool isOn = task.mVotedIsOn;
+			SystemLayer().ScheduleLambda([isOn] {
+				bool currentState = false;
+				OnOff::Attributes::OnOff::Get(kLightEndpointId, &currentState);
+				if (currentState != isOn) {
+					OnOff::Attributes::OnOff::Set(kLightEndpointId, isOn);
+					LOG_INF("Matter OnOff synced: %s", isOn ? "ON" : "OFF");
+				}
+			});
+		}
 	}
 
-	/* Schedule next poll in 100ms */
-	k_work_reschedule(&task.mSenseWork, K_MSEC(100));
-}
+	/* Periodic logging */
+	bool shouldLog = (task.mPollCount <= 30) || ((task.mPollCount % 10) == 0);
+	if (shouldLog) {
+		int val_mv = (adcVal * 3600) / 4096;
+		int ema_mv = (task.mEmaValue * 3600) / 4096;
+		LOG_INF("ADC[%u]: val=%d (%dmV) ema=%d (%dmV) state=%s",
+			task.mPollCount, adcVal, val_mv, task.mEmaValue, ema_mv,
+			task.mVotedIsOn ? "ON" : "OFF");
+	}
 
-void AppTask::SensePinHandler(const struct device *port, struct gpio_callback *cb, uint32_t pins)
-{
-	/* Interrupts disabled in favor of polling */
+	k_work_reschedule(&task.mSenseWork, K_MSEC(100));
 }
 
 void AppTask::ControlPulseHandler(struct k_work *work)
 {
 	AppTask &task = Instance();
 	/* Restore control pin to INPUT (Hi-Z) after pulse */
-	gpio_pin_configure_dt(&task.mCtrlPinOn, GPIO_INPUT);
-	LOG_INF("Control Pulse finished, ctrl pin restored to Hi-Z.");
-
-	if (task.mPendingOff) {
-		/* For OFF action: schedule standby pulse 1 second later */
-		LOG_INF("OFF action: scheduling standby pulse in 1 second...");
-		k_work_reschedule(&task.mStandbyWork, K_MSEC(1000));
-	} else {
-		task.mIsPulsing = false;
-	}
-}
-
-void AppTask::StandbyPulseHandler(struct k_work *work)
-{
-	AppTask &task = Instance();
-	/* Pull standby pin LOW for 300ms */
-	gpio_pin_configure_dt(&task.mStandbyPin, GPIO_OUTPUT_LOW);
-	LOG_INF("Standby Pin pulled LOW (pulse start)");
-	k_work_reschedule(&task.mStandbyReleaseWork, K_MSEC(300));
-}
-
-void AppTask::StandbyReleaseHandler(struct k_work *work)
-{
-	AppTask &task = Instance();
-	/* Restore standby pin to INPUT (Hi-Z) */
-	gpio_pin_configure_dt(&task.mStandbyPin, GPIO_INPUT);
+	gpio_pin_configure_dt(&task.mCtrlPin, GPIO_INPUT);
 	task.mIsPulsing = false;
-	task.mPendingOff = false;
-	LOG_INF("Standby Pulse finished, pin restored to Hi-Z. OFF sequence complete.");
+	LOG_INF("Control Pulse finished, ctrl pin restored to Hi-Z.");
 }
 
 void AppTask::InitiateAction(bool actionOn)
 {
-	LOG_INF("Remote Action requested: %s (Blind Pulse)", actionOn ? "ON" : "OFF");
+	LOG_INF("Remote Action requested: %s (Pulse)", actionOn ? "ON" : "OFF");
 
 	mIsPulsing = true;
-	mPendingOff = !actionOn;
-	/* Warm up sensing history to the target state to avoid the 1-second lag-revert.
-	 * If target is ON, set history to all 0s (LOW). If OFF, set to all 1s (HIGH). */
-	mSenseHistory = actionOn ? 0x0000 : 0xFFFF;
+	/* Pre-set the EMA and voted state to the target to prevent lag-revert */
 	mVotedIsOn = actionOn;
 
-	/* Both ON and OFF use the same control pin (gpio0.17) */
-	gpio_pin_configure_dt(&mCtrlPinOn, GPIO_OUTPUT_LOW);
-	LOG_INF("Control Pin (gpio0.17) pulled LOW for %s (Pulse start)", actionOn ? "ON" : "OFF");
+	/* Toggle pulse: pull control pin LOW for 300ms */
+	gpio_pin_configure_dt(&mCtrlPin, GPIO_OUTPUT_LOW);
+	LOG_INF("Control Pin (P0.17) pulled LOW for %s (Pulse start)", actionOn ? "ON" : "OFF");
 
 	/* Schedule release after 300ms */
 	k_work_reschedule(&mPulseWork, K_MSEC(300));
@@ -162,37 +220,49 @@ CHIP_ERROR AppTask::Init()
 	ReturnErrorOnFailure(Nrf::Matter::RegisterEventHandler(Nrf::Board::DefaultMatterEventHandler, 0));
 	ReturnErrorOnFailure(sIdentifyCluster.Init());
 
-	// Initialize our custom Hardware Pins (Control and Sense)
-	mCtrlPinOn = GPIO_DT_SPEC_GET(DT_NODELABEL(ctrl_pin_1), gpios);
-	mStandbyPin = GPIO_DT_SPEC_GET(DT_NODELABEL(ctrl_pin_2), gpios);
-	mSensePin = GPIO_DT_SPEC_GET(DT_NODELABEL(sense_pin_1), gpios);
-	
-	mSenseHistory = 0xFFFF; // Initial state: all HIGH (OFF)
+	// Initialize control pin (P0.17)
+	mCtrlPin = GPIO_DT_SPEC_GET(DT_NODELABEL(ctrl_pin_1), gpios);
+
 	mVotedIsOn = false;
 	mIsPulsing = false;
-	mPendingOff = false;
+	mAdcCalibrated = false;
+	mEmaValue = 0;
+	mEmaInitialized = false;
+	mWarmupCount = 0;
+	mPollCount = 0;
+	mInvalidCount = 0;
 
-	if (gpio_is_ready_dt(&mCtrlPinOn) && gpio_is_ready_dt(&mStandbyPin)) {
-		/* Start in Hi-Z (INPUT) mode as requested */
-		gpio_pin_configure_dt(&mCtrlPinOn, GPIO_INPUT);
-		gpio_pin_configure_dt(&mStandbyPin, GPIO_INPUT);
-		LOG_INF("Control Pin (gpio0.17) and Standby Pin (gpio0.31) initialized in Hi-Z.");
+	if (gpio_is_ready_dt(&mCtrlPin)) {
+		gpio_pin_configure_dt(&mCtrlPin, GPIO_INPUT);
+		LOG_INF("Control Pin (P0.17) initialized in Hi-Z.");
 	} else {
-		LOG_ERR("Control/Standby Pins NOT READY.");
+		LOG_ERR("Control Pin NOT READY.");
 	}
 
-	if (gpio_is_ready_dt(&mSensePin)) {
-		gpio_pin_configure_dt(&mSensePin, GPIO_INPUT);
-		/* No interrupts: Voting Polling instead */
-		LOG_INF("Sensing Feedback Polling (GPIO %d) initialized (100ms 8/10 vote).", mSensePin.pin);
-	} else {
-		LOG_ERR("Sensing Feedback Pin NOT READY.");
+	/* Initialize ADC for bath heater sensing on AIN6 (P0.30, board silkscreen '031') */
+	mAdcDev = DEVICE_DT_GET(DT_NODELABEL(adc));
+	if (!device_is_ready(mAdcDev)) {
+		LOG_ERR("ADC device not ready!");
+		return CHIP_ERROR_INTERNAL;
 	}
 
-	/* Initialize Pulse, Standby, and Sense Work */
+	mAdcChannelCfg = {};
+	mAdcChannelCfg.gain = ADC_GAIN_1_6;
+	mAdcChannelCfg.reference = ADC_REF_INTERNAL;
+	mAdcChannelCfg.acquisition_time = ADC_ACQ_TIME(ADC_ACQ_TIME_MICROSECONDS, 40);
+	mAdcChannelCfg.channel_id = kAdcChannelId;
+	mAdcChannelCfg.input_positive = SAADC_CH_PSELP_PSELP_AnalogInput6; // P0.30 (silkscreen 031)
+
+	int ret = adc_channel_setup(mAdcDev, &mAdcChannelCfg);
+	if (ret < 0) {
+		LOG_ERR("ADC channel setup failed: %d", ret);
+		return CHIP_ERROR_INTERNAL;
+	}
+	LOG_INF("ADC sensing on AIN6 (P0.30 / silkscreen 031), enter=%d exit=%d",
+		(int)kThresholdEnterOn, (int)kThresholdExitOn);
+
+	/* Initialize work items */
 	k_work_init_delayable(&mPulseWork, ControlPulseHandler);
-	k_work_init_delayable(&mStandbyWork, StandbyPulseHandler);
-	k_work_init_delayable(&mStandbyReleaseWork, StandbyReleaseHandler);
 	k_work_init_delayable(&mSenseWork, SensingPollHandler);
 
 	/* Start the polling loop immediately */

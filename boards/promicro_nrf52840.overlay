@@ -21,9 +21,7 @@
 		led1 = &led_1;
 		led2 = &led_2;
 		led3 = &led_3;
-		sense1 = &sense_pin_1;
 		ctrl1  = &ctrl_pin_1;
-		ctrl2  = &ctrl_pin_2;
 	};
 
 	leds {
@@ -46,30 +44,21 @@
 		};
 		ctrl_pin_1: ctrl_pin_1 {
 			gpios = <&gpio0 17 GPIO_ACTIVE_HIGH>;
-			label = "Bath Heater Control Pin ON";
-		};
-		ctrl_pin_2: ctrl_pin_2 {
-			gpios = <&gpio0 31 GPIO_ACTIVE_HIGH>;
-			label = "Bath Heater Standby Pin (pulsed 1s after OFF)";
+			label = "Bath Heater Control Pin (P0.17)";
 		};
 	};
 
-	sense_inputs {
-		compatible = "gpio-keys";
-		sense_pin_1: sense_pin_1 {
-			gpios = <&gpio0 2 GPIO_ACTIVE_HIGH>;
-			label = "Bath Heater Sense Pin 1";
-		};
-	};
+	/* P0.02 used as ADC analog input (AIN0) — do NOT configure as GPIO */
 
 	buttons {
 		compatible = "gpio-keys";
 		button0: button_0 {
-			gpios = <&gpio0 3 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
-			label = "Push button switch 0";
+			/* Factory Reset / BLE Adv — moved to P1.00 (not exposed) to prevent accidental trigger */
+			gpios = <&gpio1 0 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+			label = "Push button switch 0 (Factory Reset)";
 		};
 		button1: button_1 {
-			gpios = <&gpio0 4 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+			gpios = <&gpio1 2 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
 			label = "Push button switch 1";
 		};
 		button2: button_2 {
@@ -119,5 +108,10 @@
 			reg = <0xF4000 0xC000>;
 		};
 	};
+};
+
+/* Enable ADC for bath heater sensing (P0.02 = AIN0) */
+&adc {
+	status = "okay";
 };
 
